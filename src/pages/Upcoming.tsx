@@ -37,6 +37,7 @@ export function Upcoming() {
           title="Upcoming Tasks"
           tasks={[]}
           emptyMessage="No upcoming tasks! 🎉"
+          viewId="upcoming"
         />
       </div>
     )
@@ -53,6 +54,7 @@ export function Upcoming() {
             key={dateKey}
             title={formattedDate}
             tasks={tasksByDate[dateKey]}
+            viewId={`upcoming-${dateKey}`}
           />
         )
       })}

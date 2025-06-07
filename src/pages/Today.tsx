@@ -27,6 +27,7 @@ export function Today() {
         title="Today's Tasks" 
         tasks={todayTasks}
         emptyMessage="No tasks for today! 🎉"
+        viewId="today"
       />
     </div>
   )

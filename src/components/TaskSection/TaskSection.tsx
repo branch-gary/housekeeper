@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { TaskItem } from '../TaskItem'
 import type { Task } from '../../types/task'
 import styles from './TaskSection.module.scss'
@@ -7,10 +7,14 @@ interface TaskSectionProps {
   tasks: Task[]
   title: string
   emptyMessage?: string
+  viewId?: string // For persisting toggle state per view
 }
 
-export function TaskSection({ tasks, title, emptyMessage = 'No tasks' }: TaskSectionProps) {
+export function TaskSection({ tasks, title, emptyMessage = 'No tasks', viewId = 'default' }: TaskSectionProps) {
   console.log('TaskSection: Rendering', { title, taskCount: tasks.length })
+
+  // Use viewId in the state key to maintain separate states per view
+  const [showCompleted, setShowCompleted] = useState(true)
 
   const { activeTasks, completedTasks } = useMemo(() => {
     const result = tasks.reduce(
@@ -60,8 +64,23 @@ export function TaskSection({ tasks, title, emptyMessage = 'No tasks' }: TaskSec
       {/* Completed Tasks */}
       {completedTasks.length > 0 && (
         <>
-          <h3 className={styles.completedHeading}>Completed</h3>
-          <div className={styles.taskList}>
+          <button
+            className={styles.completedToggle}
+            onClick={() => setShowCompleted(!showCompleted)}
+            aria-expanded={showCompleted}
+            aria-controls={`completed-tasks-${viewId}`}
+          >
+            <span className={`${styles.toggleArrow} ${showCompleted ? styles.expanded : ''}`}>
+              ▶
+            </span>
+            <h3 className={styles.completedHeading}>
+              Completed ({completedTasks.length})
+            </h3>
+          </button>
+          <div 
+            id={`completed-tasks-${viewId}`}
+            className={`${styles.taskList} ${styles.completedList} ${showCompleted ? styles.visible : ''}`}
+          >
             {completedTasks.map(task => (
               <TaskItem key={task.id} task={task} />
             ))}
