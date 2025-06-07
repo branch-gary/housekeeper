@@ -1,3 +1,16 @@
+:root {
+  // Custom color palette
+  --color-primary: #db4c3f;
+  --color-primary-dark: #c53727;
+  --color-bg: #fafafa;
+  --color-sidebar: #f5f5f5;
+  --color-text: #202020;
+  --color-text-secondary: #555;
+  --color-border: #e8e8e8;
+  --color-hover: #eeeeee;
+  --color-focus-ring: rgba(219, 76, 63, 0.4);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -9,10 +22,27 @@ body {
     Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f5f5f5;
-  color: #333;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.5;
 }
 
 #root {
   min-height: 100vh;
+}
+
+// Enhanced focus styles for better accessibility
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+// Better button and interactive element base styles
+button, a {
+  transition: all 0.2s ease;
+  
+  &:focus-visible {
+    box-shadow: 0 0 0 4px var(--color-focus-ring);
+  }
 } 
