@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import styles from './Sidebar.module.scss'
 
 const Sidebar = () => {
@@ -5,8 +6,8 @@ const Sidebar = () => {
     <aside className={styles.sidebar}>
       <button className={styles.addTask}>+ Add Task</button>
       <nav className={styles.nav}>
-        <button>Today</button>
-        <button>Upcoming</button>
+        <Link to="/">Today</Link>
+        <Link to="/upcoming">Upcoming</Link>
       </nav>
     </aside>
   )
