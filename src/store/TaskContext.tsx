@@ -7,6 +7,7 @@ interface TaskContextType {
   addTask: (data: CreateTaskData) => void
   getTodayTasks: () => Task[]
   getUpcomingTasks: () => Task[]
+  toggleTaskCompletion: (taskId: string) => void
 }
 
 const TaskContext = createContext<TaskContextType | null>(null)
@@ -25,6 +26,14 @@ export function TaskProvider({ children }: { children: ReactNode }) {
 
     console.log('Adding task:', newTask)
     setTasks(prev => [...prev, newTask])
+  }, [])
+
+  const toggleTaskCompletion = useCallback((taskId: string) => {
+    setTasks(prev => prev.map(task => 
+      task.id === taskId 
+        ? { ...task, isCompleted: !task.isCompleted }
+        : task
+    ))
   }, [])
 
   const getTodayTasks = useCallback(() => {
@@ -74,7 +83,13 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   }, [tasks, getTodayTasks])
 
   return (
-    <TaskContext.Provider value={{ tasks, addTask, getTodayTasks, getUpcomingTasks }}>
+    <TaskContext.Provider value={{ 
+      tasks, 
+      addTask, 
+      getTodayTasks, 
+      getUpcomingTasks,
+      toggleTaskCompletion 
+    }}>
       {children}
     </TaskContext.Provider>
   )

@@ -1,10 +1,10 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout'
-import Today from './pages/Today'
-import Upcoming from './pages/Upcoming'
+import { Today } from './pages/Today'
+import { Upcoming } from './pages/Upcoming'
 import { TaskProvider } from './store/TaskContext'
 
-const App = () => {
+export function App() {
   return (
     <TaskProvider>
       <BrowserRouter>
