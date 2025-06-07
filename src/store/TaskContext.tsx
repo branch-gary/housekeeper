@@ -23,18 +23,28 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       isCompleted: false
     }
 
+    console.log('Adding task:', newTask)
     setTasks(prev => [...prev, newTask])
   }, [])
 
   const getTodayTasks = useCallback(() => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
 
+    console.log('Filtering today tasks:', { today, tomorrow })
     return tasks.filter(task => {
       if (!task.nextDueDate) return false
       const dueDate = new Date(task.nextDueDate)
       dueDate.setHours(0, 0, 0, 0)
-      return dueDate.getTime() === today.getTime()
+      const isToday = dueDate >= today && dueDate < tomorrow
+      console.log('Task due date check:', {
+        taskName: task.name,
+        dueDate,
+        isToday
+      })
+      return isToday
     })
   }, [tasks])
 
@@ -42,16 +52,26 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    return tasks.filter(task => {
-      if (!task.nextDueDate) return false
-      const dueDate = new Date(task.nextDueDate)
-      dueDate.setHours(0, 0, 0, 0)
-      return dueDate.getTime() > today.getTime()
-    }).sort((a, b) => {
-      if (!a.nextDueDate || !b.nextDueDate) return 0
-      return a.nextDueDate.getTime() - b.nextDueDate.getTime()
-    })
-  }, [tasks])
+    // Get today's tasks for filtering
+    const todaysTasks = getTodayTasks()
+    const todayTaskIds = new Set(todaysTasks.map(task => task.id))
+
+    return tasks
+      .filter(task => {
+        if (!task.nextDueDate) return false
+        // Skip if this task is already in today's list
+        if (todayTaskIds.has(task.id)) return false
+        
+        const dueDate = new Date(task.nextDueDate)
+        dueDate.setHours(0, 0, 0, 0)
+        // Include all future tasks (including those due today but not in today's list)
+        return dueDate >= today
+      })
+      .sort((a, b) => {
+        if (!a.nextDueDate || !b.nextDueDate) return 0
+        return a.nextDueDate.getTime() - b.nextDueDate.getTime()
+      })
+  }, [tasks, getTodayTasks])
 
   return (
     <TaskContext.Provider value={{ tasks, addTask, getTodayTasks, getUpcomingTasks }}>
