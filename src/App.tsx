@@ -1,12 +1,8 @@
 import type { FC } from 'react'
-import styles from './App.module.scss'
+import Layout from './components/Layout'
 
 const App: FC = () => {
-  return (
-    <div className={styles.app}>
-      <h1>Housekeeper</h1>
-    </div>
-  )
+  return <Layout />
 }
 
 export default App
