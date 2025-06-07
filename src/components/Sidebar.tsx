@@ -1,10 +1,19 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import AddTaskModal from './AddTaskModal/AddTaskModal'
 import styles from './Sidebar.module.scss'
 
 const Sidebar = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
   return (
     <aside className={styles.sidebar}>
-      <button className={styles.addTask}>+ Add Task</button>
+      <button 
+        className={styles.addTask}
+        onClick={() => setIsModalOpen(true)}
+      >
+        + Add Task
+      </button>
       
       <nav className={styles.nav}>
         <div className={styles.mainNav}>
@@ -36,6 +45,11 @@ const Sidebar = () => {
           </ul>
         </div>
       </nav>
+
+      <AddTaskModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </aside>
   )
 }
