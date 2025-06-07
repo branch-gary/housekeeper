@@ -1,5 +1,5 @@
 import { useTaskStore } from '../store/TaskContext'
-import { TaskItem } from '../components/TaskItem'
+import { TaskSection } from '../components/TaskSection/TaskSection'
 import styles from './Today.module.scss'
 
 export function Today() {
@@ -8,16 +8,11 @@ export function Today() {
 
   return (
     <div className={styles.today}>
-      <h1>Today's Tasks</h1>
-      <div className={styles.taskList}>
-        {todayTasks.length === 0 ? (
-          <p className={styles.emptyState}>No tasks for today! 🎉</p>
-        ) : (
-          todayTasks.map(task => (
-            <TaskItem key={task.id} task={task} />
-          ))
-        )}
-      </div>
+      <TaskSection 
+        title="Today's Tasks" 
+        tasks={todayTasks}
+        emptyMessage="No tasks for today! 🎉"
+      />
     </div>
   )
 } 

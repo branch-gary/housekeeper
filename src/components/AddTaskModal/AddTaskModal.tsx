@@ -42,7 +42,7 @@ const AddTaskModal = ({ isOpen, onClose }: AddTaskModalProps) => {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Add a Recurring Task">
-      <form className={styles.form} onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}>
         <div className={styles.field}>
           <label htmlFor="taskName">Task Name</label>
           <input

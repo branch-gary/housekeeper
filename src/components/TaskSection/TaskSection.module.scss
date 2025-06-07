@@ -1,0 +1,39 @@
+.section {
+  margin-bottom: 2rem;
+
+  h2 {
+    margin: 0 0 1.5rem;
+    color: var(--text-1);
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+}
+
+.taskList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.emptyState {
+  text-align: center;
+  color: var(--text-2);
+  font-size: 1.1rem;
+  padding: 2rem;
+  background: var(--surface-1);
+  border-radius: 8px;
+}
+
+.completedHeading {
+  margin: 2rem 0 1rem;
+  color: var(--text-2);
+  font-size: 1.1rem;
+  font-weight: 500;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--surface-2);
+} 
