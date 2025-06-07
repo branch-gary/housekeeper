@@ -39,7 +39,7 @@ function getLastWeekdayOfMonth(year: number, month: number, weekday: number): Da
   return lastWeekday
 }
 
-export function getNextDueDate(recurrence: RecurrenceData): Date | null {
+export function getNextDueDate(recurrence: RecurrenceData): string | null {
   if (!recurrence) return null
 
   const today = new Date()
@@ -101,9 +101,9 @@ export function getNextDueDate(recurrence: RecurrenceData): Date | null {
 
   // If the calculated date is in the past, increment until we find the next occurrence
   while (nextDate < today) {
-    const incrementedDate = getNextDueDate({ ...recurrence, startDate: nextDate })
+    const incrementedDate = getNextDueDate({ ...recurrence, startDate: nextDate.toISOString() })
     if (!incrementedDate) break
-    nextDate = incrementedDate
+    nextDate = new Date(incrementedDate)
   }
 
   console.log('Calculated next due date:', {
@@ -113,5 +113,5 @@ export function getNextDueDate(recurrence: RecurrenceData): Date | null {
     shouldStartToday
   })
 
-  return nextDate
+  return nextDate.toISOString()
 } 

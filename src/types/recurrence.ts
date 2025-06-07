@@ -10,7 +10,7 @@ export interface RecurrenceData {
   weekday?: number // 0-6 for monthly-day
   month?: number // 1-12 for yearly
   monthDayYearly?: number // 1-31 for yearly
-  startDate: Date | null
+  startDate: string | null
 }
 
 export const MONTHS = [

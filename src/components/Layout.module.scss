@@ -11,4 +11,6 @@
   padding: 2rem;
   background: var(--color-bg);
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 } 

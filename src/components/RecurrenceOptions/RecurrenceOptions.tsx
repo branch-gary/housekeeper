@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import type { RecurrenceData, RecurrenceType, WeekOrdinal } from '../../types/recurrence'
 import { MONTHS, WEEK_ORDINALS, WEEKDAYS } from '../../types/recurrence'
 import styles from './RecurrenceOptions.module.scss'
@@ -40,7 +40,7 @@ const RecurrenceOptions = ({ value, onChange }: RecurrenceOptionsProps) => {
   }
 
   const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange({ ...value, startDate: e.target.value ? new Date(e.target.value) : null })
+    onChange({ ...value, startDate: e.target.value || null })
   }
 
   return (
@@ -190,7 +190,7 @@ const RecurrenceOptions = ({ value, onChange }: RecurrenceOptionsProps) => {
           <div className={styles.datePickerWrapper}>
             <input
               type="date"
-              value={value.startDate ? value.startDate.toISOString().split('T')[0] : ''}
+              value={value.startDate || ''}
               onChange={handleStartDateChange}
               className={styles.datePicker}
             />

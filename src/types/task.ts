@@ -5,8 +5,8 @@ export interface Task {
   name: string
   category: string
   recurrence: RecurrenceData
-  createdAt: Date
-  nextDueDate: Date | null
+  createdAt: string
+  nextDueDate: string | null
   isCompleted: boolean
 }
 

@@ -10,8 +10,10 @@ interface TaskSectionProps {
 }
 
 export function TaskSection({ tasks, title, emptyMessage = 'No tasks' }: TaskSectionProps) {
+  console.log('TaskSection: Rendering', { title, taskCount: tasks.length })
+
   const { activeTasks, completedTasks } = useMemo(() => {
-    return tasks.reduce(
+    const result = tasks.reduce(
       (acc, task) => {
         if (task.isCompleted) {
           acc.completedTasks.push(task)
@@ -22,9 +24,16 @@ export function TaskSection({ tasks, title, emptyMessage = 'No tasks' }: TaskSec
       },
       { activeTasks: [] as Task[], completedTasks: [] as Task[] }
     )
+    console.log('TaskSection: Split tasks', {
+      title,
+      activeCount: result.activeTasks.length,
+      completedCount: result.completedTasks.length
+    })
+    return result
   }, [tasks])
 
   if (tasks.length === 0) {
+    console.log('TaskSection: No tasks to display')
     return (
       <div className={styles.section}>
         <h2>{title}</h2>

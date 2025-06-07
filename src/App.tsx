@@ -3,19 +3,23 @@ import Layout from './components/Layout'
 import { Today } from './pages/Today'
 import { Upcoming } from './pages/Upcoming'
 import { TaskProvider } from './store/TaskContext'
+import { ErrorBoundary } from './components/ErrorBoundary'
 
 export function App() {
+  console.log('App rendering')
   return (
-    <TaskProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route element={<Layout />}>
-            <Route index element={<Today />} />
-            <Route path="upcoming" element={<Upcoming />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </TaskProvider>
+    <ErrorBoundary>
+      <TaskProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<Layout />}>
+              <Route index element={<Today />} />
+              <Route path="upcoming" element={<Upcoming />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </TaskProvider>
+    </ErrorBoundary>
   )
 }
 
