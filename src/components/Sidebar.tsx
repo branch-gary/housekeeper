@@ -4,7 +4,11 @@ import AddTaskModal from './AddTaskModal/AddTaskModal'
 import PlanTasksModal from './PlanTasksModal/PlanTasksModal'
 import styles from './Sidebar.module.scss'
 
-const Sidebar = () => {
+interface SidebarProps {
+  onMobileClose?: () => void
+}
+
+const Sidebar = ({ onMobileClose }: SidebarProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [planningCategory, setPlanningCategory] = useState<string | null>(null)
 
@@ -15,6 +19,17 @@ const Sidebar = () => {
 
   return (
     <aside className={styles.sidebar}>
+      {/* Mobile Close Button */}
+      {onMobileClose && (
+        <button 
+          className={styles.mobileCloseButton}
+          onClick={onMobileClose}
+          aria-label="Close menu"
+        >
+          ×
+        </button>
+      )}
+
       <button 
         className={styles.addTask}
         onClick={() => setIsModalOpen(true)}
@@ -24,8 +39,8 @@ const Sidebar = () => {
       
       <nav className={styles.nav}>
         <div className={styles.mainNav}>
-          <Link to="/">Today</Link>
-          <Link to="/upcoming">Upcoming</Link>
+          <Link to="/" onClick={onMobileClose}>Today</Link>
+          <Link to="/upcoming" onClick={onMobileClose}>Upcoming</Link>
         </div>
 
         <div className={styles.categories}>

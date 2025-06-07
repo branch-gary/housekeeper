@@ -11,6 +11,42 @@
   position: sticky;
   top: 0;
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    max-width: 320px;
+    border-right: none;
+    padding-top: 4rem; // Space for close button
+  }
+}
+
+.mobileCloseButton {
+  display: none;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: var(--color-text);
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+
+  @media (max-width: 768px) {
+    display: block;
+  }
+
+  &:hover {
+    background-color: var(--color-hover);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
 }
 
 .addTask {
@@ -23,6 +59,10 @@
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.2s ease;
+
+  @media (max-width: 768px) {
+    margin: 0 0.5rem;
+  }
 
   &:hover {
     background-color: var(--color-primary-dark);
@@ -39,6 +79,10 @@
   gap: 2rem;
   overflow-y: auto;
   padding-right: 0.5rem;
+
+  @media (max-width: 768px) {
+    padding-right: 1rem;
+  }
 
   &::-webkit-scrollbar {
     width: 6px;
@@ -72,6 +116,11 @@
     display: flex;
     align-items: center;
     font-weight: 500;
+
+    @media (max-width: 768px) {
+      padding: 1rem;
+      font-size: 1rem;
+    }
 
     &:hover {
       background-color: var(--color-hover);

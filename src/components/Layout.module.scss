@@ -3,14 +3,133 @@
   min-height: 100vh;
   width: 100%;
   background: var(--color-bg);
+  position: relative;
 }
 
 .main {
   flex: 1;
-  max-width: calc(100% - 280px);
   padding: 2rem;
   background: var(--color-bg);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+.menuButton {
+  display: none;
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1000;
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+
+  @media (max-width: 768px) {
+    display: block;
+  }
+
+  &:hover {
+    background-color: var(--color-hover);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+.menuIcon {
+  display: block;
+  width: 24px;
+  height: 24px;
+  position: relative;
+}
+
+.menuBar {
+  position: absolute;
+  width: 24px;
+  height: 2px;
+  background-color: var(--color-text);
+  transition: all 0.3s ease;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 2px;
+    background-color: var(--color-text);
+    transition: all 0.3s ease;
+  }
+
+  &::before {
+    top: -8px;
+  }
+
+  &::after {
+    bottom: -8px;
+  }
+
+  &.open {
+    background-color: transparent;
+
+    &::before {
+      transform: rotate(45deg);
+      top: 0;
+    }
+
+    &::after {
+      transform: rotate(-45deg);
+      bottom: 0;
+    }
+  }
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  animation: fadeIn 0.3s ease;
+}
+
+.sidebarWrapper {
+  position: relative;
+  z-index: 200;
+
+  @media (max-width: 768px) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+
+    &.open {
+      transform: translateX(0);
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 } 
