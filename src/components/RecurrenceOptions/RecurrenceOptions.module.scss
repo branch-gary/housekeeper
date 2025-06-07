@@ -46,9 +46,16 @@
   }
 }
 
+.numberInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+
 .numberInput {
   width: 70px;
   padding: 0.75rem;
+  padding-right: 1.5rem;
   border: 1px solid var(--color-border);
   border-radius: 6px;
   font-size: 0.95rem;
@@ -67,6 +74,57 @@
     outline: none;
     border-color: var(--color-primary);
   }
+}
+
+.spinButtons {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  width: 1.5rem;
+  border-left: 1px solid transparent;
+}
+
+.spinButton {
+  flex: 1;
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  font-size: 8px;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: var(--color-text);
+    background-color: var(--color-hover);
+  }
+
+  &:active {
+    background-color: var(--color-border);
+  }
+
+  &:first-child {
+    border-top-right-radius: 6px;
+  }
+
+  &:last-child {
+    border-bottom-right-radius: 6px;
+  }
+}
+
+.preview {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  padding: 0.5rem;
+  background-color: var(--color-hover);
+  border-radius: 6px;
+  margin-top: 0.5rem;
 }
 
 .startDateSection {

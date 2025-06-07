@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Modal from '../Modal/Modal'
 import RecurrenceOptions from '../RecurrenceOptions/RecurrenceOptions'
+import { useTaskStore } from '../../store/TaskContext'
 import type { RecurrenceData } from '../../types/recurrence'
 import styles from './AddTaskModal.module.scss'
 
@@ -9,18 +10,34 @@ interface AddTaskModalProps {
   onClose: () => void
 }
 
+const initialRecurrence: RecurrenceData = {
+  type: 'weekly',
+  interval: 1,
+  startDate: null
+}
+
 const AddTaskModal = ({ isOpen, onClose }: AddTaskModalProps) => {
+  const { addTask } = useTaskStore()
   const [taskName, setTaskName] = useState('')
   const [category, setCategory] = useState('')
-  const [recurrence, setRecurrence] = useState<RecurrenceData>({
-    type: 'weekly',
-    interval: 1,
-    startDate: null
-  })
+  const [recurrence, setRecurrence] = useState<RecurrenceData>(initialRecurrence)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission here
+    
+    if (!taskName.trim() || !category.trim()) return
+
+    addTask({
+      name: taskName.trim(),
+      category: category.trim(),
+      recurrence
+    })
+
+    // Reset form
+    setTaskName('')
+    setCategory('')
+    setRecurrence(initialRecurrence)
+    onClose()
   }
 
   return (

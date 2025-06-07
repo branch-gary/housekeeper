@@ -1,9 +1,12 @@
+import { useTaskStore } from '../store/TaskContext'
+import TaskList from '../components/TaskList/TaskList'
+
 const Upcoming = () => {
+  const { getUpcomingTasks } = useTaskStore()
+  const upcomingTasks = getUpcomingTasks()
+
   return (
-    <div>
-      <h2>Upcoming Tasks</h2>
-      <p>No upcoming tasks scheduled. Click the + button to add a task.</p>
-    </div>
+    <TaskList tasks={upcomingTasks} title="Upcoming Tasks" />
   )
 }
 

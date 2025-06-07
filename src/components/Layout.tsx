@@ -1,12 +1,17 @@
+import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
-import MainView from './MainView'
 import styles from './Layout.module.scss'
 
 const Layout = () => {
+  console.log('Layout rendering')
+  console.log('styles:', styles)
+
   return (
     <div className={styles.layout}>
       <Sidebar />
-      <MainView />
+      <main className={styles.main}>
+        <Outlet />
+      </main>
     </div>
   )
 }
