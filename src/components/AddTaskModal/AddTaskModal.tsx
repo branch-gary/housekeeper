@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Modal from '../Modal/Modal'
 import RecurrenceOptions from '../RecurrenceOptions/RecurrenceOptions'
 import { useTaskStore } from '../../store/TaskContext'
@@ -8,6 +8,7 @@ import styles from './AddTaskModal.module.scss'
 interface AddTaskModalProps {
   isOpen: boolean
   onClose: () => void
+  defaultCategoryId?: string
 }
 
 const initialRecurrence: RecurrenceData = {
@@ -16,11 +17,18 @@ const initialRecurrence: RecurrenceData = {
   startDate: null
 }
 
-export default function AddTaskModal({ isOpen, onClose }: AddTaskModalProps) {
+export default function AddTaskModal({ isOpen, onClose, defaultCategoryId }: AddTaskModalProps) {
   const { addTask, categories } = useTaskStore()
   const [taskName, setTaskName] = useState('')
-  const [selectedCategoryId, setSelectedCategoryId] = useState('')
+  const [selectedCategoryId, setSelectedCategoryId] = useState(defaultCategoryId || '')
   const [recurrence, setRecurrence] = useState<RecurrenceData>(initialRecurrence)
+
+  // Update selected category when defaultCategoryId changes
+  useEffect(() => {
+    if (defaultCategoryId) {
+      setSelectedCategoryId(defaultCategoryId)
+    }
+  }, [defaultCategoryId])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -35,7 +43,7 @@ export default function AddTaskModal({ isOpen, onClose }: AddTaskModalProps) {
 
     // Reset form
     setTaskName('')
-    setSelectedCategoryId('')
+    setSelectedCategoryId(defaultCategoryId || '') // Keep the default category if provided
     setRecurrence(initialRecurrence)
     onClose()
   }

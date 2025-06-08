@@ -3,27 +3,31 @@ import styles from './EmptyState.module.scss'
 interface EmptyStateProps {
   title: string
   message: string
-  actionLabel: string
-  onAction: () => void
+  actionLabel?: string
+  onAction?: () => void
+  icon?: string
 }
 
-function EmptyState({ title, message, actionLabel, onAction }: EmptyStateProps) {
-  console.log('EmptyState rendering:', { title, message, actionLabel })
-  
+export default function EmptyState({ 
+  title, 
+  message, 
+  actionLabel, 
+  onAction,
+  icon
+}: EmptyStateProps) {
   return (
     <div className={styles.emptyState}>
-      <div className={styles.content}>
-        <h2>{title}</h2>
-        <p>{message}</p>
+      {icon && <span className={styles.icon}>{icon}</span>}
+      <h2>{title}</h2>
+      <p>{message}</p>
+      {actionLabel && onAction && (
         <button 
-          className={styles.actionButton}
           onClick={onAction}
+          className={styles.actionButton}
         >
           {actionLabel}
         </button>
-      </div>
+      )}
     </div>
   )
-}
-
-export default EmptyState 
+} 

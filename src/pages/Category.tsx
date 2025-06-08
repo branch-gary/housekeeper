@@ -1,13 +1,15 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useParams, Navigate } from 'react-router-dom'
 import { useTaskStore } from '../store/TaskContext'
 import { TaskSection } from '../components/TaskSection/TaskSection'
 import EmptyState from '../components/EmptyState/EmptyState'
+import AddTaskModal from '../components/AddTaskModal/AddTaskModal'
 import styles from './Category.module.scss'
 
 export function Category() {
   const { categoryName } = useParams<{ categoryName: string }>()
   const { tasks, categories, getFilteredTasks } = useTaskStore()
+  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false)
 
   // Find the actual category object based on URL slug
   const category = useMemo(() => {
@@ -33,6 +35,10 @@ export function Category() {
   const activeTasks = categoryTasks.filter(task => !task.isCompleted)
   const completedTasks = categoryTasks.filter(task => task.isCompleted)
 
+  const handleAddTaskClick = () => {
+    setIsAddTaskModalOpen(true)
+  }
+
   return (
     <div className={styles.categoryView}>
       <header className={styles.header}>
@@ -45,13 +51,16 @@ export function Category() {
         </div>
       </header>
 
-      {categoryTasks.length === 0 ? (
-        <EmptyState
-          title={`No tasks in ${category.name}`}
-          message="Add a task to get started!"
-          actionLabel="Add Task"
-          onAction={() => {/* Add task action will be implemented later */}}
-        />
+      {activeTasks.length === 0 ? (
+        <div className={styles.emptyStateWrapper}>
+          <EmptyState
+            title={`✨ ${category.name} is looking pretty calm right now`}
+            message="Ready to plan some tasks? Take it one step at a time - no pressure!"
+            actionLabel="Add a task"
+            onAction={handleAddTaskClick}
+            icon="🌟"
+          />
+        </div>
       ) : (
         <>
           {/* Active Tasks */}
@@ -72,6 +81,12 @@ export function Category() {
           )}
         </>
       )}
+
+      <AddTaskModal 
+        isOpen={isAddTaskModalOpen}
+        onClose={() => setIsAddTaskModalOpen(false)}
+        defaultCategoryId={category.id}
+      />
     </div>
   )
 } 
