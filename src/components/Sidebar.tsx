@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import AddTaskModal from './AddTaskModal/AddTaskModal'
-import PlanTasksModal from './PlanTasksModal/PlanTasksModal'
+import AddPlanModal from './AddPlanModal/AddPlanModal'
 import { useTaskStore } from '../store/TaskContext'
 import { useToast } from './Toast/ToastProvider'
 import styles from './Sidebar.module.scss'
@@ -28,9 +28,9 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
     }
   }, [isAddingCategory])
 
-  const handlePlanClick = (categoryId: string, e: React.MouseEvent) => {
+  const handlePlanClick = (categoryName: string, e: React.MouseEvent) => {
     e.stopPropagation() // Prevent category click event
-    setPlanningCategory(categoryId)
+    setPlanningCategory(categoryName)
   }
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,6 +63,11 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
       setNewCategoryName('')
       setAddCategoryError(null)
     }
+  }
+
+  const handleTasksAdded = (tasks: string[]) => {
+    // Remove duplicate toast since AddPlanModal already shows one
+    // showToast(`Added ${tasks.length} tasks successfully!`, 'success')
   }
 
   const isActiveRoute = (path: string) => {
@@ -142,7 +147,7 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
                   </Link>
                   <button 
                     className={styles.planButton}
-                    onClick={(e) => handlePlanClick(category.id, e)}
+                    onClick={(e) => handlePlanClick(category.name, e)}
                     aria-label={`Plan tasks for ${category.name}`}
                   >
                     Plan
@@ -209,11 +214,13 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
         onClose={() => setIsModalOpen(false)}
       />
 
-      <PlanTasksModal
-        isOpen={planningCategory !== null}
-        onClose={() => setPlanningCategory(null)}
-        categoryId={planningCategory || ''}
-      />
+      {planningCategory && (
+        <AddPlanModal
+          categoryName={planningCategory}
+          onClose={() => setPlanningCategory(null)}
+          onTasksAdded={handleTasksAdded}
+        />
+      )}
     </aside>
   )
 }

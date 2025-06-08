@@ -64,14 +64,11 @@ export function Category() {
 
           {/* Completed Tasks */}
           {completedTasks.length > 0 && (
-            <div className={styles.completedSection}>
-              <h2>Completed</h2>
-              <TaskSection
-                title="Completed Tasks"
-                tasks={completedTasks}
-                viewId={`category-${categoryName}-completed`}
-              />
-            </div>
+            <TaskSection
+              title="Completed"
+              tasks={completedTasks}
+              viewId={`category-${categoryName}-completed`}
+            />
           )}
         </>
       )}
