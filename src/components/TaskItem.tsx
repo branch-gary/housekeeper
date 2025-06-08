@@ -12,22 +12,12 @@ interface TaskItemProps {
 export function TaskItem({ task }: TaskItemProps) {
   console.log('TaskItem: Rendering', { taskId: task.id, taskName: task.name })
   
-  let storeActions
-  try {
-    storeActions = useTaskStore()
-    console.log('TaskItem: Got store actions')
-  } catch (error) {
-    console.error('TaskItem: Error getting store actions:', error)
-    return (
-      <div className={styles.taskItem}>
-        <p>Error loading task: {error instanceof Error ? error.message : String(error)}</p>
-      </div>
-    )
-  }
-
-  const { toggleTaskCompletion, deleteTask } = storeActions
+  const { toggleTaskCompletion, deleteTask, categories } = useTaskStore()
   const [isDeleting, setIsDeleting] = useState(false)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+
+  // Find category name
+  const category = categories.find(cat => cat.id === task.category)
 
   const handleDelete = () => {
     console.log('Starting delete process for task:', task.id)
@@ -66,7 +56,14 @@ export function TaskItem({ task }: TaskItemProps) {
         <div className={styles.taskContent}>
           <h3 className={styles.taskName}>{task.name}</h3>
           <p className={styles.taskDetails}>
-            {task.category && <span className={styles.category}>{task.category}</span>}
+            {category && (
+              <span 
+                className={styles.category}
+                style={{ backgroundColor: category.color + '20' }}
+              >
+                {category.name}
+              </span>
+            )}
             {task.nextDueDate && (
               <span className={styles.dueDate}>
                 Due: {format(new Date(task.nextDueDate), 'MMM d, yyyy')}

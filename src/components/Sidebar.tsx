@@ -28,9 +28,9 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
     }
   }, [isAddingCategory])
 
-  const handlePlanClick = (category: string, e: React.MouseEvent) => {
+  const handlePlanClick = (categoryId: string, e: React.MouseEvent) => {
     e.stopPropagation() // Prevent category click event
-    setPlanningCategory(category)
+    setPlanningCategory(categoryId)
   }
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -142,7 +142,7 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
                   </Link>
                   <button 
                     className={styles.planButton}
-                    onClick={(e) => handlePlanClick(category.name, e)}
+                    onClick={(e) => handlePlanClick(category.id, e)}
                     aria-label={`Plan tasks for ${category.name}`}
                   >
                     Plan
@@ -212,7 +212,7 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
       <PlanTasksModal
         isOpen={planningCategory !== null}
         onClose={() => setPlanningCategory(null)}
-        category={planningCategory || ''}
+        categoryId={planningCategory || ''}
       />
     </aside>
   )

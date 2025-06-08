@@ -6,12 +6,16 @@ import styles from './PlanTasksModal.module.scss'
 interface PlanTasksModalProps {
   isOpen: boolean
   onClose: () => void
-  category: string
+  categoryId: string
 }
 
-export default function PlanTasksModal({ isOpen, onClose, category }: PlanTasksModalProps) {
-  const { addTask } = useTaskStore()
+export default function PlanTasksModal({ isOpen, onClose, categoryId }: PlanTasksModalProps) {
+  const { addTask, categories } = useTaskStore()
   const [tasks, setTasks] = useState('')
+
+  // Find category name for display
+  const category = categories.find(cat => cat.id === categoryId)
+  if (!category) return null
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -26,7 +30,7 @@ export default function PlanTasksModal({ isOpen, onClose, category }: PlanTasksM
     taskList.forEach(taskName => {
       addTask({
         name: taskName,
-        category,
+        category: categoryId,
         recurrence: {
           type: 'daily',
           interval: 1,
@@ -44,7 +48,7 @@ export default function PlanTasksModal({ isOpen, onClose, category }: PlanTasksM
     <Modal 
       isOpen={isOpen} 
       onClose={onClose} 
-      title={`Plan Tasks - ${category}`}
+      title={`Plan Tasks - ${category.name}`}
     >
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.field}>

@@ -16,33 +16,33 @@ const initialRecurrence: RecurrenceData = {
   startDate: null
 }
 
-const AddTaskModal = ({ isOpen, onClose }: AddTaskModalProps) => {
-  const { addTask } = useTaskStore()
+export default function AddTaskModal({ isOpen, onClose }: AddTaskModalProps) {
+  const { addTask, categories } = useTaskStore()
   const [taskName, setTaskName] = useState('')
-  const [category, setCategory] = useState('')
+  const [selectedCategoryId, setSelectedCategoryId] = useState('')
   const [recurrence, setRecurrence] = useState<RecurrenceData>(initialRecurrence)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!taskName.trim() || !category.trim()) return
+    if (!taskName.trim() || !selectedCategoryId) return
 
     addTask({
       name: taskName.trim(),
-      category: category.trim(),
+      category: selectedCategoryId,
       recurrence
     })
 
     // Reset form
     setTaskName('')
-    setCategory('')
+    setSelectedCategoryId('')
     setRecurrence(initialRecurrence)
     onClose()
   }
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Add a Recurring Task">
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.field}>
           <label htmlFor="taskName">Task Name</label>
           <input
@@ -57,14 +57,19 @@ const AddTaskModal = ({ isOpen, onClose }: AddTaskModalProps) => {
 
         <div className={styles.field}>
           <label htmlFor="category">Category</label>
-          <input
-            type="text"
+          <select
             id="category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            placeholder="e.g., Kitchen"
-            autoComplete="off"
-          />
+            value={selectedCategoryId}
+            onChange={(e) => setSelectedCategoryId(e.target.value)}
+            className={styles.select}
+          >
+            <option value="">Select a category</option>
+            {categories.map(category => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className={styles.field}>
@@ -78,13 +83,11 @@ const AddTaskModal = ({ isOpen, onClose }: AddTaskModalProps) => {
         <button 
           type="submit" 
           className={styles.submitButton} 
-          disabled={!taskName.trim() || !category.trim()}
+          disabled={!taskName.trim() || !selectedCategoryId}
         >
           Save Task
         </button>
       </form>
     </Modal>
   )
-}
-
-export default AddTaskModal 
+} 

@@ -1,114 +1,79 @@
-import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useMemo } from 'react'
+import { useParams, Navigate } from 'react-router-dom'
 import { useTaskStore } from '../store/TaskContext'
 import { TaskSection } from '../components/TaskSection/TaskSection'
-import EmptyState from '../components/EmptyState'
-import PlanTasksModal from '../components/PlanTasksModal/PlanTasksModal'
+import EmptyState from '../components/EmptyState/EmptyState'
 import styles from './Category.module.scss'
 
-// Helper function to normalize category names for comparison
-function normalizeCategory(category: string): string {
-  return category
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-') // Replace any non-alphanumeric characters with hyphens
-    .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
-}
-
 export function Category() {
-  const { categoryName } = useParams()
-  const { tasks, searchQuery, getFilteredTasks } = useTaskStore()
-  const [isPlanningModalOpen, setIsPlanningModalOpen] = useState(false)
-  
-  // Filter tasks by category, safely handling undefined categories
-  const categoryTasks = tasks.filter(task => {
-    if (!task.category || !categoryName) return false
-    return normalizeCategory(task.category) === normalizeCategory(categoryName)
-  })
+  const { categoryName } = useParams<{ categoryName: string }>()
+  const { tasks, categories, getFilteredTasks } = useTaskStore()
 
-  // Apply search filter
-  const filteredTasks = getFilteredTasks(categoryTasks)
-
-  // Convert URL-friendly category name to display name
-  const displayName = categoryName
-    ?.split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ') || 'Unknown Category'
-
-  // Show empty state when there are no tasks at all
-  const hasNoTasks = categoryTasks.length === 0
-  const hasNoFilteredTasks = filteredTasks.length === 0
-
-  console.log('Category rendering:', {
-    categoryName,
-    displayName,
-    tasksCount: tasks.length,
-    categoryTasksCount: categoryTasks.length,
-    filteredTasksCount: filteredTasks.length,
-    hasNoTasks,
-    hasNoFilteredTasks,
-    searchQuery
-  })
-
-  // Get active and completed tasks
-  const activeTasks = filteredTasks.filter(task => !task.isCompleted)
-  const hasNoActiveTasks = activeTasks.length === 0
-
-  console.log('Category: Task breakdown', {
-    totalTasks: filteredTasks.length,
-    activeTasks: activeTasks.length,
-    hasNoActiveTasks
-  })
-
-  if (hasNoTasks) {
-    console.log('Category: Rendering empty state')
-    return (
-      <div className={styles.category}>
-        <EmptyState 
-          title={`Let's get ${displayName} organized`}
-          message={`No tasks in ${displayName} yet — want to add a few ideas?`}
-          actionLabel="📝 Plan Tasks"
-          onAction={() => setIsPlanningModalOpen(true)}
-        />
-        {isPlanningModalOpen && (
-          <PlanTasksModal
-            isOpen={isPlanningModalOpen}
-            onClose={() => setIsPlanningModalOpen(false)}
-            category={displayName}
-          />
-        )}
-      </div>
+  // Find the actual category object based on URL slug
+  const category = useMemo(() => {
+    if (!categoryName) return null
+    const decodedName = categoryName.replace(/-/g, ' ')
+    return categories.find(cat => 
+      cat.name.toLowerCase() === decodedName.toLowerCase()
     )
+  }, [categoryName, categories])
+
+  // If category doesn't exist, redirect to Today view
+  if (!category) {
+    return <Navigate to="/" replace />
   }
 
-  if (hasNoFilteredTasks && searchQuery.trim()) {
-    return (
-      <div className={styles.category}>
-        <EmptyState 
-          title="Nothing found"
-          message="Nothing here right now — try another word?"
-          actionLabel="Clear Search"
-          onAction={() => setIsPlanningModalOpen(true)}
-        />
-      </div>
-    )
-  }
+  // Filter tasks for this category
+  const categoryTasks = useMemo(() => {
+    const filtered = tasks.filter(task => task.category === category.id)
+    return getFilteredTasks(filtered)
+  }, [tasks, category.id, getFilteredTasks])
+
+  // Separate active and completed tasks
+  const activeTasks = categoryTasks.filter(task => !task.isCompleted)
+  const completedTasks = categoryTasks.filter(task => task.isCompleted)
 
   return (
-    <div className={styles.category}>
-      <TaskSection 
-        title={`${displayName} Tasks`}
-        tasks={filteredTasks}
-        emptyMessage={`No active tasks in ${displayName} yet`}
-        viewId={`category-${categoryName}`}
-        showEmptyState={true}
-        onEmptyAction={() => setIsPlanningModalOpen(true)}
-      />
-      {isPlanningModalOpen && (
-        <PlanTasksModal
-          isOpen={isPlanningModalOpen}
-          onClose={() => setIsPlanningModalOpen(false)}
-          category={displayName}
+    <div className={styles.categoryView}>
+      <header className={styles.header}>
+        <div className={styles.categoryIndicator}>
+          <span 
+            className={styles.categoryColor} 
+            style={{ backgroundColor: category.color }}
+          />
+          <h1>{category.name}</h1>
+        </div>
+      </header>
+
+      {categoryTasks.length === 0 ? (
+        <EmptyState
+          title={`No tasks in ${category.name}`}
+          message="Add a task to get started!"
+          actionLabel="Add Task"
+          onAction={() => {/* Add task action will be implemented later */}}
         />
+      ) : (
+        <>
+          {/* Active Tasks */}
+          <TaskSection
+            title={`${category.name} Tasks`}
+            tasks={activeTasks}
+            emptyMessage={`No active tasks in ${category.name}`}
+            viewId={`category-${categoryName}`}
+          />
+
+          {/* Completed Tasks */}
+          {completedTasks.length > 0 && (
+            <div className={styles.completedSection}>
+              <h2>Completed</h2>
+              <TaskSection
+                title="Completed Tasks"
+                tasks={completedTasks}
+                viewId={`category-${categoryName}-completed`}
+              />
+            </div>
+          )}
+        </>
       )}
     </div>
   )
