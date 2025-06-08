@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import AddTaskModal from './AddTaskModal/AddTaskModal'
 import PlanTasksModal from './PlanTasksModal/PlanTasksModal'
 import styles from './Sidebar.module.scss'
@@ -11,10 +11,19 @@ interface SidebarProps {
 const Sidebar = ({ onMobileClose }: SidebarProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [planningCategory, setPlanningCategory] = useState<string | null>(null)
+  const location = useLocation()
 
   const handlePlanClick = (category: string, e: React.MouseEvent) => {
     e.stopPropagation() // Prevent category click event
     setPlanningCategory(category)
+  }
+
+  const isActiveRoute = (path: string) => {
+    return location.pathname === path
+  }
+
+  const isActiveCategory = (category: string) => {
+    return location.pathname === `/category/${category.toLowerCase()}`
   }
 
   return (
@@ -39,8 +48,20 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
       
       <nav className={styles.nav}>
         <div className={styles.mainNav}>
-          <Link to="/" onClick={onMobileClose}>Today</Link>
-          <Link to="/upcoming" onClick={onMobileClose}>Upcoming</Link>
+          <Link 
+            to="/" 
+            onClick={onMobileClose}
+            className={isActiveRoute('/') ? styles.active : ''}
+          >
+            Today
+          </Link>
+          <Link 
+            to="/upcoming" 
+            onClick={onMobileClose}
+            className={isActiveRoute('/upcoming') ? styles.active : ''}
+          >
+            Upcoming
+          </Link>
         </div>
 
         <div className={styles.categories}>
@@ -48,10 +69,14 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
           <ul className={styles.categoryList}>
             <li>
               <div className={styles.categoryWrapper}>
-                <button className={styles.categoryButton}>
+                <Link 
+                  to="/category/kitchen"
+                  className={`${styles.categoryButton} ${isActiveCategory('kitchen') ? styles.active : ''}`}
+                  onClick={onMobileClose}
+                >
                   <span className={styles.categoryIcon} style={{ backgroundColor: '#4A90E2' }} />
                   Kitchen
-                </button>
+                </Link>
                 <button 
                   className={styles.planButton}
                   onClick={(e) => handlePlanClick('Kitchen', e)}
@@ -63,10 +88,14 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
             </li>
             <li>
               <div className={styles.categoryWrapper}>
-                <button className={styles.categoryButton}>
+                <Link 
+                  to="/category/living-room"
+                  className={`${styles.categoryButton} ${isActiveCategory('living-room') ? styles.active : ''}`}
+                  onClick={onMobileClose}
+                >
                   <span className={styles.categoryIcon} style={{ backgroundColor: '#9B59B6' }} />
                   Living Room
-                </button>
+                </Link>
                 <button 
                   className={styles.planButton}
                   onClick={(e) => handlePlanClick('Living Room', e)}
@@ -78,10 +107,14 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
             </li>
             <li>
               <div className={styles.categoryWrapper}>
-                <button className={styles.categoryButton}>
+                <Link 
+                  to="/category/bathroom"
+                  className={`${styles.categoryButton} ${isActiveCategory('bathroom') ? styles.active : ''}`}
+                  onClick={onMobileClose}
+                >
                   <span className={styles.categoryIcon} style={{ backgroundColor: '#2ECC71' }} />
                   Bathroom
-                </button>
+                </Link>
                 <button 
                   className={styles.planButton}
                   onClick={(e) => handlePlanClick('Bathroom', e)}
