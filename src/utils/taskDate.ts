@@ -45,21 +45,21 @@ export function getNextDueDate(recurrence: RecurrenceData): string | null {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
+  // If no start date is provided, use today
   const startDate = recurrence.startDate ? new Date(recurrence.startDate) : today
   startDate.setHours(0, 0, 0, 0)
-  let nextDate = new Date(startDate)
 
-  // For tasks starting today without a specific start date, we want them to be due today
-  const shouldStartToday = !recurrence.startDate && startDate.getTime() === today.getTime()
+  // For new tasks (where startDate is today), we want them to be due today
+  if (startDate.getTime() === today.getTime()) {
+    console.log('New task starting today, setting due date to today')
+    return today.toISOString()
+  }
+
+  let nextDate = new Date(startDate)
 
   switch (recurrence.type) {
     case 'daily':
-      // If it's a new daily task starting today, make it due today
-      if (shouldStartToday) {
-        nextDate = today
-      } else {
-        nextDate = addDays(startDate, recurrence.interval)
-      }
+      nextDate = addDays(startDate, recurrence.interval)
       break
 
     case 'weekly':
@@ -110,7 +110,7 @@ export function getNextDueDate(recurrence: RecurrenceData): string | null {
     recurrence,
     startDate,
     nextDate,
-    shouldStartToday
+    isNewTask: startDate.getTime() === today.getTime()
   })
 
   return nextDate.toISOString()

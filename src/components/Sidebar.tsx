@@ -11,11 +11,17 @@ interface SidebarProps {
 const Sidebar = ({ onMobileClose }: SidebarProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [planningCategory, setPlanningCategory] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
   const location = useLocation()
 
   const handlePlanClick = (category: string, e: React.MouseEvent) => {
     e.stopPropagation() // Prevent category click event
     setPlanningCategory(category)
+  }
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value)
+    // Search functionality will be implemented later
   }
 
   const isActiveRoute = (path: string) => {
@@ -62,6 +68,18 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
           >
             Upcoming
           </Link>
+        </div>
+
+        {/* Search Bar */}
+        <div className={styles.searchContainer}>
+          <input
+            type="text"
+            className={styles.searchInput}
+            placeholder="Search tasks…"
+            aria-label="Search tasks"
+            value={searchQuery}
+            onChange={handleSearchChange}
+          />
         </div>
 
         <div className={styles.categories}>

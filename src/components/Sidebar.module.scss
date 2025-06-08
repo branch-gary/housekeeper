@@ -139,6 +139,38 @@
   }
 }
 
+.searchContainer {
+  padding: 0 0.5rem;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background-color: var(--color-background-light);
+  color: var(--color-text);
+  transition: all 0.2s ease;
+
+  &::placeholder {
+    color: var(--color-text-secondary);
+    opacity: 0.7;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-text-secondary);
+    background-color: var(--color-background);
+  }
+
+  // Remove default focus outline and add subtle one
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 1px var(--color-text-secondary);
+  }
+}
+
 .categories {
   display: flex;
   flex-direction: column;
