@@ -9,6 +9,12 @@
   gap: 1.5rem;
   position: relative;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+
+  @media (max-width: 768px) {
+    width: min(280px, 80vw);
+    padding-top: 1.5rem;
+  }
 }
 
 .addTask {
@@ -266,29 +272,4 @@ button.clearSearch {
   border-radius: 4px;
   color: var(--error-text);
   font-size: 0.9rem;
-}
-
-.mobileCloseButton {
-  display: none;
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-  z-index: 10;
-
-  @media (max-width: 768px) {
-    display: block;
-  }
-
-  &:hover {
-    background: var(--surface-2);
-    color: var(--text-primary);
-  }
 } 

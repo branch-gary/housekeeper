@@ -1,24 +1,16 @@
 import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
+import Header from './Header/Header'
 import { useLayout } from '../contexts/LayoutContext'
 import styles from './Layout.module.scss'
 
 export function Layout() {
-  const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useLayout()
+  const { isMobileMenuOpen, closeMobileMenu } = useLayout()
 
   return (
     <div className={styles.layout}>
-      {/* Mobile Menu Button */}
-      <button 
-        className={styles.menuButton}
-        onClick={toggleMobileMenu}
-        aria-label="Toggle menu"
-        aria-expanded={isMobileMenuOpen}
-      >
-        <span className={styles.menuIcon}>
-          <span className={`${styles.menuBar} ${isMobileMenuOpen ? styles.open : ''}`} />
-        </span>
-      </button>
+      {/* Header */}
+      <Header />
 
       {/* Overlay */}
       {isMobileMenuOpen && (
@@ -29,19 +21,22 @@ export function Layout() {
         />
       )}
 
-      {/* Sidebar */}
-      <div 
-        className={`${styles.sidebarWrapper} ${isMobileMenuOpen ? styles.open : ''}`}
-        role="navigation"
-        aria-label="Main navigation"
-      >
-        <Sidebar onMobileClose={closeMobileMenu} />
-      </div>
+      {/* Content wrapper */}
+      <div className={styles.contentWrapper}>
+        {/* Sidebar */}
+        <div 
+          className={`${styles.sidebarWrapper} ${isMobileMenuOpen ? styles.open : ''}`}
+          role="navigation"
+          aria-label="Main navigation"
+        >
+          <Sidebar onMobileClose={closeMobileMenu} />
+        </div>
 
-      {/* Main Content */}
-      <main className={styles.main}>
-        <Outlet />
-      </main>
+        {/* Main Content */}
+        <main className={styles.main}>
+          <Outlet />
+        </main>
+      </div>
     </div>
   )
 }

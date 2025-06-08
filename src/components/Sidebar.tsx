@@ -124,17 +124,6 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
 
   return (
     <aside className={styles.sidebar}>
-      {/* Only show mobile close button on mobile */}
-      {onMobileClose && (
-        <button 
-          className={styles.mobileCloseButton}
-          onClick={onMobileClose}
-          aria-label="Close menu"
-        >
-          ×
-        </button>
-      )}
-
       <button 
         className={styles.addTask}
         onClick={() => setIsModalOpen(true)}
