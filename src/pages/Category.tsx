@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTaskStore } from '../store/TaskContext'
 import { TaskSection } from '../components/TaskSection/TaskSection'
+import EmptyState from '../components/EmptyState'
+import PlanTasksModal from '../components/PlanTasksModal/PlanTasksModal'
 import styles from './Category.module.scss'
 
 // Helper function to normalize category names for comparison
@@ -14,6 +17,7 @@ function normalizeCategory(category: string): string {
 export function Category() {
   const { categoryName } = useParams()
   const { tasks } = useTaskStore()
+  const [isPlanningModalOpen, setIsPlanningModalOpen] = useState(false)
   
   // Filter tasks by category, safely handling undefined categories
   const categoryTasks = tasks.filter(task => {
@@ -27,14 +31,65 @@ export function Category() {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ') || 'Unknown Category'
 
+  // Show empty state when there are no tasks at all
+  const hasNoTasks = categoryTasks.length === 0
+
+  console.log('Category rendering:', {
+    categoryName,
+    displayName,
+    tasksCount: tasks.length,
+    categoryTasksCount: categoryTasks.length,
+    hasNoTasks
+  })
+
+  // Get active and completed tasks
+  const activeTasks = categoryTasks.filter(task => !task.isCompleted)
+  const hasNoActiveTasks = activeTasks.length === 0
+
+  console.log('Category: Task breakdown', {
+    totalTasks: categoryTasks.length,
+    activeTasks: activeTasks.length,
+    hasNoActiveTasks
+  })
+
+  if (hasNoTasks) {
+    console.log('Category: Rendering empty state')
+    return (
+      <div className={styles.category}>
+        <EmptyState 
+          title={`Let's get ${displayName} organized`}
+          message={`No tasks in ${displayName} yet — want to add a few ideas?`}
+          actionLabel="📝 Plan Tasks"
+          onAction={() => setIsPlanningModalOpen(true)}
+        />
+        {isPlanningModalOpen && (
+          <PlanTasksModal
+            isOpen={isPlanningModalOpen}
+            onClose={() => setIsPlanningModalOpen(false)}
+            category={displayName}
+          />
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className={styles.category}>
       <TaskSection 
         title={`${displayName} Tasks`}
         tasks={categoryTasks}
-        emptyMessage={`No tasks in ${displayName}`}
+        emptyMessage={`No active tasks in ${displayName} yet`}
         viewId={`category-${categoryName}`}
+        showEmptyState={true}
+        onEmptyAction={() => setIsPlanningModalOpen(true)}
       />
+      {isPlanningModalOpen && (
+        <PlanTasksModal
+          isOpen={isPlanningModalOpen}
+          onClose={() => setIsPlanningModalOpen(false)}
+          category={displayName}
+        />
+      )}
     </div>
   )
 } 

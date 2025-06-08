@@ -8,10 +8,25 @@ interface TaskSectionProps {
   title: string
   emptyMessage?: string
   viewId?: string // For persisting toggle state per view
+  showEmptyState?: boolean // Whether to show the empty state message
+  onEmptyAction?: () => void // Callback for empty state action
 }
 
-export function TaskSection({ tasks, title, emptyMessage = 'No tasks', viewId = 'default' }: TaskSectionProps) {
-  console.log('TaskSection: Rendering', { title, taskCount: tasks.length })
+export function TaskSection({ 
+  tasks, 
+  title, 
+  emptyMessage = 'No tasks', 
+  viewId = 'default',
+  showEmptyState = true,
+  onEmptyAction
+}: TaskSectionProps) {
+  console.log('TaskSection: Rendering', { 
+    title, 
+    taskCount: tasks.length, 
+    showEmptyState,
+    emptyMessage,
+    hasEmptyAction: !!onEmptyAction
+  })
 
   // Use viewId in the state key to maintain separate states per view
   const [showCompleted, setShowCompleted] = useState(true)
@@ -36,14 +51,10 @@ export function TaskSection({ tasks, title, emptyMessage = 'No tasks', viewId = 
     return result
   }, [tasks])
 
+  // If there are no tasks at all, let the parent handle it
   if (tasks.length === 0) {
-    console.log('TaskSection: No tasks to display')
-    return (
-      <div className={styles.section}>
-        <h2>{title}</h2>
-        <p className={styles.emptyState}>{emptyMessage}</p>
-      </div>
-    )
+    console.log('TaskSection: No tasks at all, returning null')
+    return null
   }
 
   return (
@@ -53,7 +64,19 @@ export function TaskSection({ tasks, title, emptyMessage = 'No tasks', viewId = 
       {/* Active Tasks */}
       <div className={styles.taskList}>
         {activeTasks.length === 0 ? (
-          <p className={styles.emptyState}>No active tasks</p>
+          showEmptyState && (
+            <div className={styles.emptyStateContainer}>
+              <p className={styles.emptyState}>{emptyMessage}</p>
+              {onEmptyAction && (
+                <button 
+                  className={styles.emptyStateAction}
+                  onClick={onEmptyAction}
+                >
+                  📝 Plan Tasks
+                </button>
+              )}
+            </div>
+          )
         ) : (
           activeTasks.map(task => (
             <TaskItem key={task.id} task={task} />
