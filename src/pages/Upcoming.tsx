@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { format } from 'date-fns'
 import { useTaskStore } from '../store/TaskContext'
 import { TaskSection } from '../components/TaskSection/TaskSection'
+import EmptyState from '../components/EmptyState'
 import type { Task } from '../types/task'
 import styles from './Upcoming.module.scss'
 
@@ -10,7 +11,7 @@ interface TasksByDate {
 }
 
 export function Upcoming() {
-  const { getUpcomingTasks } = useTaskStore()
+  const { getUpcomingTasks, searchQuery, setSearchQuery } = useTaskStore()
   const upcomingTasks = getUpcomingTasks()
 
   const tasksByDate = useMemo(() => {
@@ -30,6 +31,21 @@ export function Upcoming() {
     return Object.keys(tasksByDate).sort()
   }, [tasksByDate])
 
+  // Show search-specific empty state when no results are found
+  if (upcomingTasks.length === 0 && searchQuery.trim()) {
+    return (
+      <div className={styles.upcoming}>
+        <EmptyState 
+          title="Nothing found"
+          message="Nothing here right now — try another word?"
+          actionLabel="Clear Search"
+          onAction={() => setSearchQuery('')}
+        />
+      </div>
+    )
+  }
+
+  // Show regular empty state when there are no upcoming tasks
   if (upcomingTasks.length === 0) {
     return (
       <div className={styles.upcoming}>

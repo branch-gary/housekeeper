@@ -18,6 +18,9 @@ interface TaskContextType {
   getUpcomingTasks: () => Task[]
   toggleTaskCompletion: (taskId: string) => void
   deleteTask: (taskId: string) => void
+  searchQuery: string
+  setSearchQuery: (query: string) => void
+  getFilteredTasks: (tasks: Task[]) => Task[]
 }
 
 const TaskContext = createContext<TaskContextType | null>(null)
@@ -34,6 +37,8 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       return []
     }
   })
+
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Save tasks to localStorage whenever they change
   useEffect(() => {
@@ -74,6 +79,16 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
+  // Filter tasks based on search query
+  const getFilteredTasks = useCallback((tasksToFilter: Task[]): Task[] => {
+    if (!searchQuery.trim()) return tasksToFilter
+
+    const normalizedQuery = searchQuery.toLowerCase().trim()
+    return tasksToFilter.filter(task => 
+      task.name.toLowerCase().includes(normalizedQuery)
+    )
+  }, [searchQuery])
+
   const getTodayTasks = useCallback(() => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
@@ -81,7 +96,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     tomorrow.setDate(tomorrow.getDate() + 1)
 
     console.log('Filtering today tasks:', { today, tomorrow })
-    return tasks.filter(task => {
+    const todayTasks = tasks.filter(task => {
       if (!task.nextDueDate) return false
       try {
         const dueDate = new Date(task.nextDueDate)
@@ -98,7 +113,9 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         return false
       }
     })
-  }, [tasks])
+
+    return getFilteredTasks(todayTasks)
+  }, [tasks, getFilteredTasks])
 
   const getUpcomingTasks = useCallback(() => {
     const today = new Date()
@@ -108,7 +125,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     const todaysTasks = getTodayTasks()
     const todayTaskIds = new Set(todaysTasks.map(task => task.id))
 
-    return tasks
+    const upcomingTasks = tasks
       .filter(task => {
         if (!task.nextDueDate) return false
         try {
@@ -133,7 +150,9 @@ export function TaskProvider({ children }: { children: ReactNode }) {
           return 0
         }
       })
-  }, [tasks, getTodayTasks])
+
+    return getFilteredTasks(upcomingTasks)
+  }, [tasks, getTodayTasks, getFilteredTasks])
 
   return (
     <TaskContext.Provider value={{ 
@@ -142,7 +161,10 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       getTodayTasks, 
       getUpcomingTasks,
       toggleTaskCompletion,
-      deleteTask
+      deleteTask,
+      searchQuery,
+      setSearchQuery,
+      getFilteredTasks
     }}>
       {children}
     </TaskContext.Provider>

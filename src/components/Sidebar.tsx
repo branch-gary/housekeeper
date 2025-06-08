@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import AddTaskModal from './AddTaskModal/AddTaskModal'
 import PlanTasksModal from './PlanTasksModal/PlanTasksModal'
+import { useTaskStore } from '../store/TaskContext'
 import styles from './Sidebar.module.scss'
 
 interface SidebarProps {
@@ -11,7 +12,7 @@ interface SidebarProps {
 const Sidebar = ({ onMobileClose }: SidebarProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [planningCategory, setPlanningCategory] = useState<string | null>(null)
-  const [searchQuery, setSearchQuery] = useState('')
+  const { searchQuery, setSearchQuery } = useTaskStore()
   const location = useLocation()
 
   const handlePlanClick = (category: string, e: React.MouseEvent) => {
@@ -21,7 +22,6 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value)
-    // Search functionality will be implemented later
   }
 
   const isActiveRoute = (path: string) => {

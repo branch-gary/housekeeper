@@ -16,7 +16,7 @@ function normalizeCategory(category: string): string {
 
 export function Category() {
   const { categoryName } = useParams()
-  const { tasks } = useTaskStore()
+  const { tasks, searchQuery, getFilteredTasks } = useTaskStore()
   const [isPlanningModalOpen, setIsPlanningModalOpen] = useState(false)
   
   // Filter tasks by category, safely handling undefined categories
@@ -24,6 +24,9 @@ export function Category() {
     if (!task.category || !categoryName) return false
     return normalizeCategory(task.category) === normalizeCategory(categoryName)
   })
+
+  // Apply search filter
+  const filteredTasks = getFilteredTasks(categoryTasks)
 
   // Convert URL-friendly category name to display name
   const displayName = categoryName
@@ -33,21 +36,25 @@ export function Category() {
 
   // Show empty state when there are no tasks at all
   const hasNoTasks = categoryTasks.length === 0
+  const hasNoFilteredTasks = filteredTasks.length === 0
 
   console.log('Category rendering:', {
     categoryName,
     displayName,
     tasksCount: tasks.length,
     categoryTasksCount: categoryTasks.length,
-    hasNoTasks
+    filteredTasksCount: filteredTasks.length,
+    hasNoTasks,
+    hasNoFilteredTasks,
+    searchQuery
   })
 
   // Get active and completed tasks
-  const activeTasks = categoryTasks.filter(task => !task.isCompleted)
+  const activeTasks = filteredTasks.filter(task => !task.isCompleted)
   const hasNoActiveTasks = activeTasks.length === 0
 
   console.log('Category: Task breakdown', {
-    totalTasks: categoryTasks.length,
+    totalTasks: filteredTasks.length,
     activeTasks: activeTasks.length,
     hasNoActiveTasks
   })
@@ -73,11 +80,24 @@ export function Category() {
     )
   }
 
+  if (hasNoFilteredTasks && searchQuery.trim()) {
+    return (
+      <div className={styles.category}>
+        <EmptyState 
+          title="Nothing found"
+          message="Nothing here right now — try another word?"
+          actionLabel="Clear Search"
+          onAction={() => setIsPlanningModalOpen(true)}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className={styles.category}>
       <TaskSection 
         title={`${displayName} Tasks`}
-        tasks={categoryTasks}
+        tasks={filteredTasks}
         emptyMessage={`No active tasks in ${displayName} yet`}
         viewId={`category-${categoryName}`}
         showEmptyState={true}
