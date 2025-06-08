@@ -11,6 +11,12 @@ function generateId() {
   })
 }
 
+interface Category {
+  id: string
+  name: string
+  color: string
+}
+
 interface TaskContextType {
   tasks: Task[]
   addTask: (data: CreateTaskData) => void
@@ -21,11 +27,36 @@ interface TaskContextType {
   searchQuery: string
   setSearchQuery: (query: string) => void
   getFilteredTasks: (tasks: Task[]) => Task[]
+  categories: Category[]
+  addCategory: (name: string) => Promise<{ success: boolean; error?: string }>
+  deleteCategory: (id: string) => void
 }
 
 const TaskContext = createContext<TaskContextType | null>(null)
 
 const STORAGE_KEY = 'housekeeper_tasks'
+const CATEGORIES_KEY = 'housekeeper_categories'
+
+// Default categories with consistent colors
+const DEFAULT_CATEGORIES: Category[] = [
+  { id: generateId(), name: 'Kitchen', color: '#4A90E2' },
+  { id: generateId(), name: 'Living Room', color: '#9B59B6' },
+  { id: generateId(), name: 'Bathroom', color: '#2ECC71' }
+]
+
+// Available colors for new categories
+const CATEGORY_COLORS = [
+  '#4A90E2', // Blue
+  '#9B59B6', // Purple
+  '#2ECC71', // Green
+  '#E74C3C', // Red
+  '#F1C40F', // Yellow
+  '#E67E22', // Orange
+  '#34495E', // Navy
+  '#16A085', // Teal
+  '#8E44AD', // Deep Purple
+  '#D35400'  // Burnt Orange
+]
 
 export function TaskProvider({ children }: { children: ReactNode }) {
   const [tasks, setTasks] = useState<Task[]>(() => {
@@ -35,6 +66,16 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Error loading tasks from localStorage:', error)
       return []
+    }
+  })
+
+  const [categories, setCategories] = useState<Category[]>(() => {
+    try {
+      const savedCategories = localStorage.getItem(CATEGORIES_KEY)
+      return savedCategories ? JSON.parse(savedCategories) : DEFAULT_CATEGORIES
+    } catch (error) {
+      console.error('Error loading categories from localStorage:', error)
+      return DEFAULT_CATEGORIES
     }
   })
 
@@ -48,6 +89,15 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       console.error('Error saving tasks to localStorage:', error)
     }
   }, [tasks])
+
+  // Save categories to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories))
+    } catch (error) {
+      console.error('Error saving categories to localStorage:', error)
+    }
+  }, [categories])
 
   const addTask = useCallback((data: CreateTaskData) => {
     const newTask: Task = {
@@ -154,6 +204,49 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     return getFilteredTasks(upcomingTasks)
   }, [tasks, getTodayTasks, getFilteredTasks])
 
+  const addCategory = useCallback(async (name: string): Promise<{ success: boolean; error?: string }> => {
+    // Normalize the name for comparison
+    const normalizedName = name.trim()
+    
+    // Validate name
+    if (!normalizedName) {
+      return { success: false, error: 'Category name cannot be empty' }
+    }
+
+    // Check for duplicates (case-insensitive)
+    const isDuplicate = categories.some(
+      cat => cat.name.toLowerCase() === normalizedName.toLowerCase()
+    )
+    if (isDuplicate) {
+      return { success: false, error: 'A category with this name already exists' }
+    }
+
+    // Get a random color from the available colors
+    const usedColors = new Set(categories.map(cat => cat.color))
+    const availableColors = CATEGORY_COLORS.filter(color => !usedColors.has(color))
+    const color = availableColors.length > 0
+      ? availableColors[Math.floor(Math.random() * availableColors.length)]
+      : CATEGORY_COLORS[Math.floor(Math.random() * CATEGORY_COLORS.length)]
+
+    // Create new category
+    const newCategory: Category = {
+      id: generateId(),
+      name: normalizedName,
+      color
+    }
+
+    setCategories(prev => [...prev, newCategory])
+    return { success: true }
+  }, [categories])
+
+  const deleteCategory = useCallback((id: string) => {
+    setCategories(prev => prev.filter(cat => cat.id !== id))
+    // Remove category from tasks in this category
+    setTasks(prev => prev.map(task => 
+      task.category === id ? { ...task, category: '' } : task
+    ))
+  }, [])
+
   return (
     <TaskContext.Provider value={{ 
       tasks, 
@@ -164,7 +257,10 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       deleteTask,
       searchQuery,
       setSearchQuery,
-      getFilteredTasks
+      getFilteredTasks,
+      categories,
+      addCategory,
+      deleteCategory
     }}>
       {children}
     </TaskContext.Provider>

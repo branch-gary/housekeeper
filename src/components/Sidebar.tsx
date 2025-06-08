@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import AddTaskModal from './AddTaskModal/AddTaskModal'
 import PlanTasksModal from './PlanTasksModal/PlanTasksModal'
 import { useTaskStore } from '../store/TaskContext'
+import { useToast } from './Toast/ToastProvider'
 import styles from './Sidebar.module.scss'
 
 interface SidebarProps {
@@ -12,8 +13,20 @@ interface SidebarProps {
 const Sidebar = ({ onMobileClose }: SidebarProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [planningCategory, setPlanningCategory] = useState<string | null>(null)
-  const { searchQuery, setSearchQuery } = useTaskStore()
+  const [isAddingCategory, setIsAddingCategory] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
+  const [addCategoryError, setAddCategoryError] = useState<string | null>(null)
+  const { searchQuery, setSearchQuery, categories, addCategory } = useTaskStore()
+  const { showToast } = useToast()
   const location = useLocation()
+  const newCategoryInputRef = useRef<HTMLInputElement>(null)
+
+  // Auto-focus the new category input when it appears
+  useEffect(() => {
+    if (isAddingCategory && newCategoryInputRef.current) {
+      newCategoryInputRef.current.focus()
+    }
+  }, [isAddingCategory])
 
   const handlePlanClick = (category: string, e: React.MouseEvent) => {
     e.stopPropagation() // Prevent category click event
@@ -24,12 +37,40 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
     setSearchQuery(e.target.value)
   }
 
+  const handleAddCategoryClick = () => {
+    setIsAddingCategory(true)
+    setAddCategoryError(null)
+  }
+
+  const handleCategorySubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    const result = await addCategory(newCategoryName)
+    if (result.success) {
+      setNewCategoryName('')
+      setIsAddingCategory(false)
+      setAddCategoryError(null)
+      showToast('Category added successfully!', 'success')
+    } else {
+      setAddCategoryError(result.error || 'Failed to add category')
+      showToast(result.error || 'Failed to add category', 'error')
+    }
+  }
+
+  const handleCategoryKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setIsAddingCategory(false)
+      setNewCategoryName('')
+      setAddCategoryError(null)
+    }
+  }
+
   const isActiveRoute = (path: string) => {
     return location.pathname === path
   }
 
-  const isActiveCategory = (category: string) => {
-    return location.pathname === `/category/${category.toLowerCase()}`
+  const isActiveCategory = (categoryName: string) => {
+    return location.pathname === `/category/${categoryName.toLowerCase().replace(/\s+/g, '-')}`
   }
 
   return (
@@ -85,62 +126,79 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
         <div className={styles.categories}>
           <h2 className={styles.categoryHeader}>Categories</h2>
           <ul className={styles.categoryList}>
+            {categories.map(category => (
+              <li key={category.id}>
+                <div className={styles.categoryWrapper}>
+                  <Link 
+                    to={`/category/${category.name.toLowerCase().replace(/\s+/g, '-')}`}
+                    className={`${styles.categoryButton} ${isActiveCategory(category.name) ? styles.active : ''}`}
+                    onClick={onMobileClose}
+                  >
+                    <span 
+                      className={styles.categoryIcon} 
+                      style={{ backgroundColor: category.color }} 
+                    />
+                    {category.name}
+                  </Link>
+                  <button 
+                    className={styles.planButton}
+                    onClick={(e) => handlePlanClick(category.name, e)}
+                    aria-label={`Plan tasks for ${category.name}`}
+                  >
+                    Plan
+                  </button>
+                </div>
+              </li>
+            ))}
+
+            {/* Add Category Form */}
             <li>
-              <div className={styles.categoryWrapper}>
-                <Link 
-                  to="/category/kitchen"
-                  className={`${styles.categoryButton} ${isActiveCategory('kitchen') ? styles.active : ''}`}
-                  onClick={onMobileClose}
+              {isAddingCategory ? (
+                <form onSubmit={handleCategorySubmit} className={styles.addCategoryForm}>
+                  <input
+                    ref={newCategoryInputRef}
+                    type="text"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    onKeyDown={handleCategoryKeyDown}
+                    placeholder="Category name..."
+                    className={styles.addCategoryInput}
+                    aria-label="New category name"
+                  />
+                  {addCategoryError && (
+                    <div className={styles.addCategoryError}>
+                      {addCategoryError}
+                    </div>
+                  )}
+                  <div className={styles.addCategoryActions}>
+                    <button 
+                      type="submit" 
+                      className={styles.addCategorySubmit}
+                      disabled={!newCategoryName.trim()}
+                    >
+                      Add
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setIsAddingCategory(false)
+                        setNewCategoryName('')
+                        setAddCategoryError(null)
+                      }}
+                      className={styles.addCategoryCancel}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <button
+                  onClick={handleAddCategoryClick}
+                  className={styles.addCategoryButton}
                 >
-                  <span className={styles.categoryIcon} style={{ backgroundColor: '#4A90E2' }} />
-                  Kitchen
-                </Link>
-                <button 
-                  className={styles.planButton}
-                  onClick={(e) => handlePlanClick('Kitchen', e)}
-                  aria-label="Plan tasks for Kitchen"
-                >
-                  Plan
+                  + Add Category
                 </button>
-              </div>
-            </li>
-            <li>
-              <div className={styles.categoryWrapper}>
-                <Link 
-                  to="/category/living-room"
-                  className={`${styles.categoryButton} ${isActiveCategory('living-room') ? styles.active : ''}`}
-                  onClick={onMobileClose}
-                >
-                  <span className={styles.categoryIcon} style={{ backgroundColor: '#9B59B6' }} />
-                  Living Room
-                </Link>
-                <button 
-                  className={styles.planButton}
-                  onClick={(e) => handlePlanClick('Living Room', e)}
-                  aria-label="Plan tasks for Living Room"
-                >
-                  Plan
-                </button>
-              </div>
-            </li>
-            <li>
-              <div className={styles.categoryWrapper}>
-                <Link 
-                  to="/category/bathroom"
-                  className={`${styles.categoryButton} ${isActiveCategory('bathroom') ? styles.active : ''}`}
-                  onClick={onMobileClose}
-                >
-                  <span className={styles.categoryIcon} style={{ backgroundColor: '#2ECC71' }} />
-                  Bathroom
-                </Link>
-                <button 
-                  className={styles.planButton}
-                  onClick={(e) => handlePlanClick('Bathroom', e)}
-                  aria-label="Plan tasks for Bathroom"
-                >
-                  Plan
-                </button>
-              </div>
+              )}
             </li>
           </ul>
         </div>
