@@ -51,7 +51,7 @@ export function Category() {
         </div>
       </header>
 
-      {activeTasks.length === 0 ? (
+      {categoryTasks.length === 0 ? (
         <div className={styles.emptyStateWrapper}>
           <EmptyState
             title={`✨ ${category.name} is looking pretty calm right now`}
@@ -69,6 +69,7 @@ export function Category() {
             tasks={activeTasks}
             emptyMessage={`No active tasks in ${category.name}`}
             viewId={`category-${categoryName}`}
+            showEmptyState={false}
           />
 
           {/* Completed Tasks */}
@@ -77,6 +78,7 @@ export function Category() {
               title="Completed"
               tasks={completedTasks}
               viewId={`category-${categoryName}-completed`}
+              showEmptyState={false}
             />
           )}
         </>

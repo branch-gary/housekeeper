@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import AddTaskModal from './AddTaskModal/AddTaskModal'
 import AddPlanModal from './AddPlanModal/AddPlanModal'
@@ -17,12 +17,25 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
   const [newCategoryName, setNewCategoryName] = useState('')
   const [addCategoryError, setAddCategoryError] = useState<string | null>(null)
   const [searchInputValue, setSearchInputValue] = useState('')
-  const { searchQuery, setSearchQuery, categories, addCategory } = useTaskStore()
+  const { searchQuery, setSearchQuery, categories, addCategory, tasks } = useTaskStore()
   const { showToast } = useToast()
   const location = useLocation()
   const navigate = useNavigate()
   const newCategoryInputRef = useRef<HTMLInputElement>(null)
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
+
+  // Calculate task counts for each category
+  const categoryTaskCounts = useMemo(() => {
+    return categories.reduce((acc, category) => {
+      const incompleteTasks = tasks.filter(task => 
+        task && 
+        task.category === category.id && 
+        !task.isCompleted
+      ).length
+      acc[category.id] = incompleteTasks
+      return acc
+    }, {} as Record<string, number>)
+  }, [categories, tasks])
 
   // Auto-focus the new category input when it appears
   useEffect(() => {
@@ -186,7 +199,14 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
                     className={styles.categoryIcon} 
                     style={{ backgroundColor: category.color }} 
                   />
-                  {category.name}
+                  <span className={styles.categoryName}>
+                    {category.name}
+                    {categoryTaskCounts[category.id] > 0 && (
+                      <span className={styles.categoryBadge}>
+                        ({categoryTaskCounts[category.id]})
+                      </span>
+                    )}
+                  </span>
                 </Link>
                 <button 
                   className={styles.planButton}

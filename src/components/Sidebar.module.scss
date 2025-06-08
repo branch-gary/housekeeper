@@ -174,6 +174,24 @@ button.clearSearch {
   }
 }
 
+.categoryName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.categoryBadge {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: normal;
+  transition: all 0.2s ease;
+}
+
 .categoryIcon {
   width: 12px;
   height: 12px;
