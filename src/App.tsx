@@ -3,6 +3,7 @@ import Layout from './components/Layout'
 import { Today } from './pages/Today'
 import { Upcoming } from './pages/Upcoming'
 import { Category } from './pages/Category'
+import { SearchResults } from './pages/SearchResults'
 import { TaskProvider } from './store/TaskContext'
 import { LayoutProvider } from './contexts/LayoutContext'
 import { ErrorBoundary } from './components/ErrorBoundary'
@@ -21,6 +22,7 @@ export function App() {
                   <Route index element={<Today />} />
                   <Route path="upcoming" element={<Upcoming />} />
                   <Route path="category/:categoryName" element={<Category />} />
+                  <Route path="search" element={<SearchResults />} />
                 </Route>
               </Routes>
             </BrowserRouter>

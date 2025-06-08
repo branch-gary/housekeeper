@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import AddTaskModal from './AddTaskModal/AddTaskModal'
 import AddPlanModal from './AddPlanModal/AddPlanModal'
 import { useTaskStore } from '../store/TaskContext'
@@ -16,10 +16,13 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
   const [isAddingCategory, setIsAddingCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
   const [addCategoryError, setAddCategoryError] = useState<string | null>(null)
+  const [searchInputValue, setSearchInputValue] = useState('')
   const { searchQuery, setSearchQuery, categories, addCategory } = useTaskStore()
   const { showToast } = useToast()
   const location = useLocation()
+  const navigate = useNavigate()
   const newCategoryInputRef = useRef<HTMLInputElement>(null)
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
 
   // Auto-focus the new category input when it appears
   useEffect(() => {
@@ -28,13 +31,41 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
     }
   }, [isAddingCategory])
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current)
+      }
+    }
+  }, [])
+
   const handlePlanClick = (categoryName: string, e: React.MouseEvent) => {
     e.stopPropagation() // Prevent category click event
     setPlanningCategory(categoryName)
   }
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value)
+    const value = e.target.value
+    setSearchInputValue(value)
+
+    // Clear any existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current)
+    }
+
+    // Set a new timeout for the debounced search
+    searchTimeoutRef.current = setTimeout(() => {
+      setSearchQuery(value)
+      if (value.trim()) {
+        navigate('/search')
+      }
+    }, 300)
+  }
+
+  const handleSearchClear = () => {
+    setSearchInputValue('')
+    setSearchQuery('')
   }
 
   const handleAddCategoryClick = () => {
@@ -80,7 +111,7 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
 
   return (
     <aside className={styles.sidebar}>
-      {/* Mobile Close Button */}
+      {/* Only show mobile close button on mobile */}
       {onMobileClose && (
         <button 
           className={styles.mobileCloseButton}
@@ -97,117 +128,105 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
       >
         + Add Task
       </button>
+
+      <div className={styles.search}>
+        <input
+          type="text"
+          placeholder="Search tasks..."
+          value={searchInputValue}
+          onChange={handleSearchChange}
+          className={styles.searchInput}
+        />
+        {searchInputValue && (
+          <button
+            className={styles.clearSearch}
+            onClick={handleSearchClear}
+            aria-label="Clear search"
+          >
+            ×
+          </button>
+        )}
+      </div>
       
-      <nav className={styles.nav}>
-        <div className={styles.mainNav}>
-          <Link 
-            to="/" 
-            onClick={onMobileClose}
-            className={isActiveRoute('/') ? styles.active : ''}
-          >
-            Today
-          </Link>
-          <Link 
-            to="/upcoming" 
-            onClick={onMobileClose}
-            className={isActiveRoute('/upcoming') ? styles.active : ''}
-          >
-            Upcoming
-          </Link>
-        </div>
-
-        {/* Search Bar */}
-        <div className={styles.searchContainer}>
-          <input
-            type="text"
-            className={styles.searchInput}
-            placeholder="Search tasks…"
-            aria-label="Search tasks"
-            value={searchQuery}
-            onChange={handleSearchChange}
-          />
-        </div>
-
-        <div className={styles.categories}>
-          <h2 className={styles.categoryHeader}>Categories</h2>
-          <ul className={styles.categoryList}>
-            {categories.map(category => (
-              <li key={category.id}>
-                <div className={styles.categoryWrapper}>
-                  <Link 
-                    to={`/category/${category.name.toLowerCase().replace(/\s+/g, '-')}`}
-                    className={`${styles.categoryButton} ${isActiveCategory(category.name) ? styles.active : ''}`}
-                    onClick={onMobileClose}
-                  >
-                    <span 
-                      className={styles.categoryIcon} 
-                      style={{ backgroundColor: category.color }} 
-                    />
-                    {category.name}
-                  </Link>
-                  <button 
-                    className={styles.planButton}
-                    onClick={(e) => handlePlanClick(category.name, e)}
-                    aria-label={`Plan tasks for ${category.name}`}
-                  >
-                    Plan
-                  </button>
-                </div>
-              </li>
-            ))}
-
-            {/* Add Category Form */}
-            <li>
-              {isAddingCategory ? (
-                <form onSubmit={handleCategorySubmit} className={styles.addCategoryForm}>
-                  <input
-                    ref={newCategoryInputRef}
-                    type="text"
-                    value={newCategoryName}
-                    onChange={(e) => setNewCategoryName(e.target.value)}
-                    onKeyDown={handleCategoryKeyDown}
-                    placeholder="Category name..."
-                    className={styles.addCategoryInput}
-                    aria-label="New category name"
-                  />
-                  {addCategoryError && (
-                    <div className={styles.addCategoryError}>
-                      {addCategoryError}
-                    </div>
-                  )}
-                  <div className={styles.addCategoryActions}>
-                    <button 
-                      type="submit" 
-                      className={styles.addCategorySubmit}
-                      disabled={!newCategoryName.trim()}
-                    >
-                      Add
-                    </button>
-                    <button 
-                      type="button"
-                      onClick={() => {
-                        setIsAddingCategory(false)
-                        setNewCategoryName('')
-                        setAddCategoryError(null)
-                      }}
-                      className={styles.addCategoryCancel}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <button
-                  onClick={handleAddCategoryClick}
-                  className={styles.addCategoryButton}
-                >
-                  + Add Category
-                </button>
-              )}
-            </li>
-          </ul>
-        </div>
+      <nav>
+        <ul className={styles.nav}>
+          <li>
+            <Link 
+              to="/"
+              className={`${styles.navLink} ${isActiveRoute('/') ? styles.active : ''}`}
+              onClick={onMobileClose}
+            >
+              Today
+            </Link>
+          </li>
+          <li>
+            <Link 
+              to="/upcoming"
+              className={`${styles.navLink} ${isActiveRoute('/upcoming') ? styles.active : ''}`}
+              onClick={onMobileClose}
+            >
+              Upcoming
+            </Link>
+          </li>
+        </ul>
       </nav>
+
+      <div className={styles.categories}>
+        <h2 className={styles.categoryHeader}>Categories</h2>
+        <ul className={styles.categoryList}>
+          {categories.map(category => (
+            <li key={category.id}>
+              <div className={styles.categoryWrapper}>
+                <Link 
+                  to={`/category/${category.name.toLowerCase().replace(/\s+/g, '-')}`}
+                  className={`${styles.categoryButton} ${isActiveCategory(category.name) ? styles.active : ''}`}
+                  onClick={onMobileClose}
+                >
+                  <span 
+                    className={styles.categoryIcon} 
+                    style={{ backgroundColor: category.color }} 
+                  />
+                  {category.name}
+                </Link>
+                <button 
+                  className={styles.planButton}
+                  onClick={(e) => handlePlanClick(category.name, e)}
+                  aria-label={`Plan tasks for ${category.name}`}
+                >
+                  Plan
+                </button>
+              </div>
+            </li>
+          ))}
+
+          {/* Add Category Form */}
+          <li>
+            {isAddingCategory ? (
+              <form onSubmit={handleCategorySubmit} className={styles.addCategoryForm}>
+                <input
+                  ref={newCategoryInputRef}
+                  type="text"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  onKeyDown={handleCategoryKeyDown}
+                  placeholder="Category name"
+                  className={styles.addCategoryInput}
+                />
+                {addCategoryError && (
+                  <p className={styles.error}>{addCategoryError}</p>
+                )}
+              </form>
+            ) : (
+              <button
+                className={styles.addCategory}
+                onClick={handleAddCategoryClick}
+              >
+                + Add Category
+              </button>
+            )}
+          </li>
+        </ul>
+      </div>
 
       <AddTaskModal 
         isOpen={isModalOpen}

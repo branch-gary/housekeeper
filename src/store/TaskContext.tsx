@@ -135,6 +135,8 @@ export function TaskProvider({ children }: { children: ReactNode }) {
 
     const normalizedQuery = searchQuery.toLowerCase().trim()
     return tasksToFilter.filter(task => 
+      task && // Check if task exists
+      task.name && // Check if task has a name
       task.name.toLowerCase().includes(normalizedQuery)
     )
   }, [searchQuery])
