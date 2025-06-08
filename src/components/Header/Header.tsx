@@ -18,6 +18,11 @@ export function Header() {
           <span className={styles.menuBar}></span>
         </div>
       </button>
+
+      <div className={styles.titleWrapper}>
+        <span className={styles.titleIcon} role="img" aria-label="House">🏡</span>
+        <h1 className={styles.title}>Housekeeper</h1>
+      </div>
     </header>
   )
 }
