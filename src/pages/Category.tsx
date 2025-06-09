@@ -8,7 +8,7 @@ import styles from './Category.module.scss'
 
 export function Category() {
   const { categoryName } = useParams<{ categoryName: string }>()
-  const { tasks, categories, getFilteredTasks } = useTaskStore()
+  const { categories, getTasksForCategory } = useTaskStore()
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false)
 
   // Find the actual category object based on URL slug
@@ -25,11 +25,10 @@ export function Category() {
     return <Navigate to="/" replace />
   }
 
-  // Filter tasks for this category
+  // Get tasks for this category using the new utility function
   const categoryTasks = useMemo(() => {
-    const filtered = tasks.filter(task => task.category === category.id)
-    return getFilteredTasks(filtered)
-  }, [tasks, category.id, getFilteredTasks])
+    return getTasksForCategory(category.id)
+  }, [category.id, getTasksForCategory])
 
   // Separate active and completed tasks
   const activeTasks = categoryTasks.filter(task => !task.isCompleted)

@@ -22,6 +22,7 @@ interface TaskContextType {
   addTask: (data: CreateTaskData) => void
   getTodayTasks: () => Task[]
   getUpcomingTasks: () => Task[]
+  getTasksForCategory: (categoryId: string) => Task[]
   toggleTaskCompletion: (taskId: string) => void
   deleteTask: (taskId: string) => void
   searchQuery: string
@@ -141,25 +142,26 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     )
   }, [searchQuery])
 
+  const getTasksForCategory = useCallback((categoryId: string): Task[] => {
+    // First get all tasks for this category
+    const categoryTasks = tasks.filter(task => task.category === categoryId)
+    
+    // Apply any active search filter
+    return getFilteredTasks(categoryTasks)
+  }, [tasks, getFilteredTasks])
+
   const getTodayTasks = useCallback(() => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const tomorrow = new Date(today)
     tomorrow.setDate(tomorrow.getDate() + 1)
 
-    console.log('Filtering today tasks:', { today, tomorrow })
     const todayTasks = tasks.filter(task => {
       if (!task.nextDueDate) return false
       try {
         const dueDate = new Date(task.nextDueDate)
         dueDate.setHours(0, 0, 0, 0)
-        const isToday = dueDate >= today && dueDate < tomorrow
-        console.log('Task due date check:', {
-          taskName: task.name,
-          dueDate,
-          isToday
-        })
-        return isToday
+        return dueDate >= today && dueDate < tomorrow
       } catch (error) {
         console.error('Error processing task date:', error, task)
         return false
@@ -186,7 +188,6 @@ export function TaskProvider({ children }: { children: ReactNode }) {
           
           const dueDate = new Date(task.nextDueDate)
           dueDate.setHours(0, 0, 0, 0)
-          // Include all future tasks (including those due today but not in today's list)
           return dueDate >= today
         } catch (error) {
           console.error('Error processing task date:', error, task)
@@ -250,20 +251,23 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <TaskContext.Provider value={{ 
-      tasks, 
-      addTask, 
-      getTodayTasks, 
-      getUpcomingTasks,
-      toggleTaskCompletion,
-      deleteTask,
-      searchQuery,
-      setSearchQuery,
-      getFilteredTasks,
-      categories,
-      addCategory,
-      deleteCategory
-    }}>
+    <TaskContext.Provider
+      value={{
+        tasks,
+        addTask,
+        getTodayTasks,
+        getUpcomingTasks,
+        getTasksForCategory,
+        toggleTaskCompletion,
+        deleteTask,
+        searchQuery,
+        setSearchQuery,
+        getFilteredTasks,
+        categories,
+        addCategory,
+        deleteCategory
+      }}
+    >
       {children}
     </TaskContext.Provider>
   )

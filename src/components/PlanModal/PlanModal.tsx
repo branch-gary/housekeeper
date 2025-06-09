@@ -284,13 +284,15 @@ export default function PlanModal({ categoryId, categoryName, onClose, onTasksAd
       title={`🧠 Let's make a plan for your ${categoryName}`}
     >
       <div className={styles.container}>
-        <div className={styles.header}>
-          <p className={styles.message}>
-            Take a moment to step into the {categoryName}. Look around.<br/>
-            Think about everything — big chores, small habits, things you forget, things you do often.<br/>
-            This is your space, your plan.
-          </p>
-        </div>
+        {addedTasks.length === 0 && (
+          <div className={styles.header}>
+            <p className={styles.message}>
+              Take a moment to step into the {categoryName}. Look around.<br/>
+              Think about everything — big chores, small habits, things you forget, things you do often.<br/>
+              This is your space, your plan.
+            </p>
+          </div>
+        )}
 
         <div className={styles.addTaskSection}>
           <button

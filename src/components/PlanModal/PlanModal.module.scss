@@ -11,55 +11,45 @@
 }
 
 .header {
-  flex-shrink: 0; // Prevent header from shrinking
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: var(--bg-subtle);
+  margin-bottom: 0.5rem;
+}
 
-  .message {
-    font-size: 1.1rem;
-    line-height: 1.6;
-    color: var(--text-primary);
-    background: var(--bg-subtle);
-    padding: 1.5rem;
-    border-radius: 12px;
-    text-align: center;
-    border: 2px solid var(--accent);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
+.message {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0;
+  text-align: center;
 }
 
 .addTaskSection {
   display: flex;
   justify-content: center;
-  padding: 0.5rem 0;
-  width: 100%;
-  flex-shrink: 0; // Prevent button from shrinking
+  padding: 0.5rem;
 }
 
 .addTaskButton {
   width: 100%;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: white;
-  background: #3b82f6; // Bright blue
   padding: 1rem;
+  background: #3b82f6;
+  color: white;
   border: none;
   border-radius: 8px;
+  font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+  font-weight: 500;
 
   &:hover {
-    background: #2563eb; // Darker blue on hover
+    background: #2563eb;
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
   }
 
   &:active {
     transform: translateY(0);
-  }
-
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
   }
 }
 
@@ -70,6 +60,7 @@
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  padding-top: 0.5rem;
 }
 
 .taskListTitle {
@@ -346,58 +337,70 @@
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
-  padding-top: 1rem;
+  padding: 1rem;
+  background: white;
   border-top: 1px solid var(--border);
-  background: var(--bg-card, white);
-  flex-shrink: 0; // Prevent actions from shrinking
   position: sticky;
   bottom: 0;
-  margin-top: auto; // Push to bottom if content is short
-  z-index: 1; // Ensure it stays above scrolling content
+  margin-top: auto;
 }
 
-.cancelButton,
+.cancelButton {
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--border);
+  background: white;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--bg-subtle);
+    border-color: var(--border-dark);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
 .saveButton {
   padding: 0.75rem 1.5rem;
+  border: none;
+  background: #3b82f6;
+  color: white;
+  border-radius: 8px;
   font-size: 1rem;
   font-weight: 500;
-  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
   min-width: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 0.5rem;
 
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--accent-alpha);
+  &:not(:disabled) {
+    background: #2563eb;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+
+    &:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(37, 99, 235, 0.25);
+    }
+
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
+    }
   }
 
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-    pointer-events: none;
-  }
-}
-
-.cancelButton {
-  background: var(--bg-button);
-  border: 1px solid var(--border);
-  color: var(--text-primary);
-
-  &:hover:not(:disabled) {
-    background: var(--bg-button-hover);
-  }
-}
-
-.saveButton {
-  background: var(--accent);
-  border: none;
-  color: var(--text-on-accent);
-
-  &:hover:not(:disabled) {
-    background: var(--accent-dark);
+    background: #3b82f6;
   }
 }
 
