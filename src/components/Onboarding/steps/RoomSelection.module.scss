@@ -1,0 +1,141 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.subtitle {
+  font-size: 1.125rem;
+  color: #666;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.roomButton {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 2px solid #e5e5e5;
+  border-radius: 12px;
+  background: white;
+  text-align: left;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    border-color: #d1d1d1;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  &.selected {
+    border-color: #2563eb;
+    background-color: #eff6ff;
+
+    .roomName {
+      color: #1e40af;
+    }
+
+    &:hover {
+      border-color: #1d4ed8;
+      background-color: #dbeafe;
+    }
+  }
+}
+
+.roomIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  color: white;
+}
+
+.roomInfo {
+  flex: 1;
+}
+
+.roomName {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 0.25rem;
+  transition: color 0.2s ease;
+}
+
+.roomDescription {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.checkmark {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  color: #2563eb;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 1rem;
+}
+
+.nextButton {
+  padding: 0.75rem 2rem;
+  background-color: #2563eb;
+  color: white;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background-color: #1d4ed8;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    background-color: #e5e5e5;
+    color: #a1a1a1;
+    cursor: not-allowed;
+  }
+} 
