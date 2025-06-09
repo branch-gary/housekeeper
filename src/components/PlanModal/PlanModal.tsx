@@ -23,18 +23,70 @@ interface AddedTask {
   }
 }
 
+interface ConfirmDeleteProps {
+  taskName: string
+  onConfirm: () => void
+  onCancel: () => void
+}
+
+function ConfirmDelete({ taskName, onConfirm, onCancel }: ConfirmDeleteProps) {
+  return (
+    <div className={styles.confirmDelete}>
+      <p>Are you sure you want to remove "{taskName}" from your plan?</p>
+      <div className={styles.confirmActions}>
+        <button onClick={onCancel} className={styles.cancelButton}>
+          Cancel
+        </button>
+        <button onClick={onConfirm} className={styles.removeButton}>
+          Remove
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function PlanModal({ categoryId, categoryName, onClose, onTasksAdded }: PlanModalProps) {
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false)
   const [addedTasks, setAddedTasks] = useState<AddedTask[]>([])
+  const [editingTask, setEditingTask] = useState<AddedTask | null>(null)
+  const [taskToDelete, setTaskToDelete] = useState<AddedTask | null>(null)
   const { addTask } = useTaskStore()
   const { showToast } = useToast()
 
   const handleAddTaskClick = () => {
+    setEditingTask(null)
     setIsAddTaskModalOpen(true)
   }
 
+  const handleEditTask = (task: AddedTask) => {
+    setEditingTask(task)
+    setIsAddTaskModalOpen(true)
+  }
+
+  const handleDeleteTask = (task: AddedTask) => {
+    setTaskToDelete(task)
+  }
+
+  const handleConfirmDelete = () => {
+    if (taskToDelete) {
+      setAddedTasks(prev => prev.filter(t => t.id !== taskToDelete.id))
+      setTaskToDelete(null)
+      showToast('Task removed from plan', 'success')
+    }
+  }
+
   const handleTaskAdded = (task: AddedTask) => {
-    setAddedTasks(prev => [...prev, task])
+    if (editingTask) {
+      // Replace existing task
+      setAddedTasks(prev => prev.map(t => 
+        t.id === editingTask.id ? task : t
+      ))
+      setEditingTask(null)
+      showToast('Task updated', 'success')
+    } else {
+      // Add new task
+      setAddedTasks(prev => [...prev, task])
+    }
     setIsAddTaskModalOpen(false)
   }
 
@@ -101,9 +153,13 @@ export default function PlanModal({ categoryId, categoryName, onClose, onTasksAd
           </button>
         </div>
 
-        {addedTasks.length > 0 && (
-          <div className={styles.taskListSection}>
-            <h3 className={styles.taskListTitle}>Tasks You've Added</h3>
+        <div className={styles.taskListSection}>
+          <h3 className={styles.taskListTitle}>Tasks You've Added</h3>
+          {addedTasks.length === 0 ? (
+            <p className={styles.emptyMessage}>
+              No tasks yet. Click "+ Add a task" to begin planning this space.
+            </p>
+          ) : (
             <div className={styles.taskList}>
               {addedTasks.map((task) => (
                 <div key={task.id} className={styles.taskCard}>
@@ -113,10 +169,34 @@ export default function PlanModal({ categoryId, categoryName, onClose, onTasksAd
                       {getRecurrenceLabel(task.recurrence)}
                     </span>
                   </div>
+                  <div className={styles.taskActions}>
+                    <button
+                      onClick={() => handleEditTask(task)}
+                      className={styles.editButton}
+                      aria-label={`Edit task: ${task.name}`}
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={() => handleDeleteTask(task)}
+                      className={styles.deleteButton}
+                      aria-label={`Delete task: ${task.name}`}
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
+          )}
+        </div>
+
+        {taskToDelete && (
+          <ConfirmDelete
+            taskName={taskToDelete.name}
+            onConfirm={handleConfirmDelete}
+            onCancel={() => setTaskToDelete(null)}
+          />
         )}
 
         <div className={styles.actions}>
@@ -138,9 +218,13 @@ export default function PlanModal({ categoryId, categoryName, onClose, onTasksAd
 
       <AddTaskModal
         isOpen={isAddTaskModalOpen}
-        onClose={() => setIsAddTaskModalOpen(false)}
+        onClose={() => {
+          setIsAddTaskModalOpen(false)
+          setEditingTask(null)
+        }}
         defaultCategoryId={categoryId}
         onTaskAdded={handleTaskAdded}
+        editingTask={editingTask}
       />
     </Modal>
   )

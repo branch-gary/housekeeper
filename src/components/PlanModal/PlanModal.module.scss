@@ -5,6 +5,7 @@
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  position: relative;
 }
 
 .header {
@@ -71,6 +72,16 @@
   padding: 0 0.5rem;
 }
 
+.emptyMessage {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 2rem;
+  background: var(--bg-subtle);
+  border-radius: 8px;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
 .taskList {
   display: flex;
   flex-direction: column;
@@ -104,6 +115,10 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   position: relative;
   overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
 
   &::before {
     content: '';
@@ -128,6 +143,7 @@
   flex-direction: column;
   gap: 0.5rem;
   padding-left: 0.75rem;
+  flex: 1;
 }
 
 .taskName {
@@ -146,6 +162,99 @@
   &::before {
     content: '🔄';
     font-size: 0.9em;
+  }
+}
+
+.taskActions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.editButton,
+.deleteButton {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1.1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: var(--bg-subtle);
+    transform: scale(1.1);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--accent-alpha);
+  }
+}
+
+.confirmDelete {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  z-index: 10;
+
+  &::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: -1;
+  }
+
+  p {
+    margin: 0 0 1.5rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--text-primary);
+  }
+}
+
+.confirmActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+
+  button {
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px var(--accent-alpha);
+    }
+  }
+}
+
+.removeButton {
+  background: #ef4444;
+  color: white;
+  border: none;
+
+  &:hover {
+    background: #dc2626;
   }
 }
 

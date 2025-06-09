@@ -14,13 +14,24 @@ interface AddTaskModalProps {
     name: string
     recurrence: RecurrenceData
   }) => void
+  editingTask?: {
+    id: string
+    name: string
+    recurrence: RecurrenceData
+  } | null
 }
 
 function generateId() {
   return Math.random().toString(36).substring(2) + Date.now().toString(36)
 }
 
-export default function AddTaskModal({ isOpen, onClose, defaultCategoryId, onTaskAdded }: AddTaskModalProps) {
+export default function AddTaskModal({ 
+  isOpen, 
+  onClose, 
+  defaultCategoryId, 
+  onTaskAdded,
+  editingTask 
+}: AddTaskModalProps) {
   const [taskName, setTaskName] = useState('')
   const [selectedCategoryId, setSelectedCategoryId] = useState(defaultCategoryId || '')
   const [recurrence, setRecurrence] = useState<RecurrenceData>({
@@ -31,18 +42,23 @@ export default function AddTaskModal({ isOpen, onClose, defaultCategoryId, onTas
 
   const { categories } = useTaskStore()
 
-  // Reset form when modal opens
+  // Reset form when modal opens or editing task changes
   useEffect(() => {
     if (isOpen) {
-      setTaskName('')
-      setSelectedCategoryId(defaultCategoryId || '')
-      setRecurrence({
-        type: 'daily',
-        interval: 1,
-        startDate: new Date().toISOString().split('T')[0]
-      })
+      if (editingTask) {
+        setTaskName(editingTask.name)
+        setRecurrence(editingTask.recurrence)
+      } else {
+        setTaskName('')
+        setSelectedCategoryId(defaultCategoryId || '')
+        setRecurrence({
+          type: 'daily',
+          interval: 1,
+          startDate: new Date().toISOString().split('T')[0]
+        })
+      }
     }
-  }, [isOpen, defaultCategoryId])
+  }, [isOpen, editingTask, defaultCategoryId])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,16 +67,13 @@ export default function AddTaskModal({ isOpen, onClose, defaultCategoryId, onTas
       return
     }
 
-    const newTask = {
-      id: generateId(),
+    const task = {
+      id: editingTask?.id || generateId(),
       name: taskName.trim(),
       recurrence
     }
 
-    // If we're in plan mode, just notify parent
-    if (onTaskAdded) {
-      onTaskAdded(newTask)
-    }
+    onTaskAdded?.(task)
 
     // Reset form
     setTaskName('')
@@ -75,7 +88,11 @@ export default function AddTaskModal({ isOpen, onClose, defaultCategoryId, onTas
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Add a Recurring Task">
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose} 
+      title={editingTask ? 'Edit Task' : 'Add a Recurring Task'}
+    >
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.field}>
           <label htmlFor="taskName">Task Name</label>
@@ -122,7 +139,7 @@ export default function AddTaskModal({ isOpen, onClose, defaultCategoryId, onTas
           className={styles.submitButton} 
           disabled={!taskName.trim() || !selectedCategoryId}
         >
-          Save Task
+          {editingTask ? 'Update Task' : 'Save Task'}
         </button>
       </form>
     </Modal>
