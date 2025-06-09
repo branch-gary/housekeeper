@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { format } from 'date-fns'
 import Modal from '../Modal/Modal'
 import AddTaskModal from '../AddTaskModal/AddTaskModal'
@@ -20,7 +20,7 @@ interface AddedTask {
   recurrence: {
     type: 'daily' | 'weekly' | 'monthly-date' | 'monthly-day' | 'yearly'
     interval: number
-    startDate: string
+    startDate: string | null
   }
 }
 
@@ -82,6 +82,7 @@ export default function PlanModal({ categoryId, categoryName, onClose, onTasksAd
     removeTemporaryTask,
     clearTemporaryTasks
   } = usePlan()
+  const [deletingTaskIds, setDeletingTaskIds] = useState<Set<string>>(new Set())
 
   const addedTasks = getTemporaryTasks(categoryId)
 
@@ -95,28 +96,49 @@ export default function PlanModal({ categoryId, categoryName, onClose, onTasksAd
     setIsAddTaskModalOpen(true)
   }
 
-  const handleDeleteTask = (task: AddedTask) => {
+  const handleDeleteTask = useCallback((task: AddedTask) => {
     setTaskToDelete(task)
-  }
+  }, [])
 
-  const handleConfirmDelete = () => {
-    if (taskToDelete) {
-      removeTemporaryTask(categoryId, taskToDelete.id)
-      setTaskToDelete(null)
-      showToast('Task removed from plan', 'success')
-    }
-  }
+  const handleConfirmDelete = useCallback(async () => {
+    if (!taskToDelete) return
+
+    // Start delete animation
+    setDeletingTaskIds(prev => new Set([...prev, taskToDelete.id]))
+
+    // Wait for animation to complete
+    await new Promise(resolve => setTimeout(resolve, 250))
+
+    // Remove task from list
+    removeTemporaryTask(categoryId, taskToDelete.id)
+    setTaskToDelete(null)
+    setDeletingTaskIds(prev => {
+      const next = new Set(prev)
+      next.delete(taskToDelete.id)
+      return next
+    })
+    showToast('Task removed from plan', 'success')
+  }, [taskToDelete, categoryId, removeTemporaryTask, showToast])
 
   const handleTaskAdded = (task: AddedTask) => {
+    // Ensure startDate is a string (use today's date if null)
+    const taskWithStartDate = {
+      ...task,
+      recurrence: {
+        ...task.recurrence,
+        startDate: task.recurrence.startDate || format(new Date(), 'yyyy-MM-dd')
+      }
+    }
+
     if (editingTask) {
       // Replace existing task
-      updateTemporaryTask(categoryId, editingTask.id, task)
+      updateTemporaryTask(categoryId, editingTask.id, taskWithStartDate)
       setEditingTask(null)
       showToast('Task updated', 'success')
     } else {
       // Add new task
       addTemporaryTask(categoryId, {
-        ...task,
+        ...taskWithStartDate,
         categoryId
       })
     }
@@ -248,14 +270,23 @@ export default function PlanModal({ categoryId, categoryName, onClose, onTasksAd
 
         <div className={styles.taskListSection}>
           <h3 className={styles.taskListTitle}>Tasks You've Added</h3>
+          <p className={styles.taskListMessage}>
+            Here's your plan so far — you can edit or remove anything before saving.
+          </p>
           {addedTasks.length === 0 ? (
             <p className={styles.emptyMessage}>
               No tasks yet. Click "+ Add a task" to begin planning this space.
             </p>
           ) : (
-            <div className={styles.taskList}>
+            <div className={styles.taskList} role="list">
               {addedTasks.map((task) => (
-                <div key={task.id} className={styles.taskCard}>
+                <div 
+                  key={task.id} 
+                  className={styles.taskCard}
+                  role="listitem"
+                  data-task-id={task.id}
+                  data-deleting={deletingTaskIds.has(task.id)}
+                >
                   <div className={styles.taskInfo}>
                     <span className={styles.taskName}>{task.name}</span>
                     <span className={styles.taskFrequency}>
