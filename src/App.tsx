@@ -8,6 +8,7 @@ import { TaskProvider } from './store/TaskContext'
 import { LayoutProvider } from './contexts/LayoutContext'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { ToastProvider } from './components/Toast/ToastProvider'
+import { DebugMenu } from './components/DebugMenu/DebugMenu'
 
 export function App() {
   console.log('App rendering')
@@ -26,6 +27,7 @@ export function App() {
                 </Route>
               </Routes>
             </BrowserRouter>
+            <DebugMenu />
           </ToastProvider>
         </TaskProvider>
       </LayoutProvider>

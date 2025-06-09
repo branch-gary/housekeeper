@@ -1,12 +1,14 @@
 .sidebar {
   width: 280px;
   height: 100vh;
-  background: var(--surface-1);
-  border-right: 1px solid var(--border-color);
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  position: sticky;
+  top: 0;
   position: relative;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;

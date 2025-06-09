@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import AddTaskModal from './AddTaskModal/AddTaskModal'
-import AddPlanModal from './AddPlanModal/AddPlanModal'
+import PlanModal from './PlanModal/PlanModal'
 import { useTaskStore } from '../store/TaskContext'
 import { useToast } from './Toast/ToastProvider'
 import styles from './Sidebar.module.scss'
@@ -12,7 +12,7 @@ interface SidebarProps {
 
 const Sidebar = ({ onMobileClose }: SidebarProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [planningCategory, setPlanningCategory] = useState<string | null>(null)
+  const [planningCategory, setPlanningCategory] = useState<{ id: string; name: string } | null>(null)
   const [isAddingCategory, setIsAddingCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
   const [addCategoryError, setAddCategoryError] = useState<string | null>(null)
@@ -53,9 +53,9 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
     }
   }, [])
 
-  const handlePlanClick = (categoryName: string, e: React.MouseEvent) => {
+  const handlePlanClick = (categoryId: string, categoryName: string, e: React.MouseEvent) => {
     e.stopPropagation() // Prevent category click event
-    setPlanningCategory(categoryName)
+    setPlanningCategory({ id: categoryId, name: categoryName })
   }
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -110,7 +110,7 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
   }
 
   const handleTasksAdded = (tasks: string[]) => {
-    // Remove duplicate toast since AddPlanModal already shows one
+    // Remove duplicate toast since PlanModal already shows one
     // showToast(`Added ${tasks.length} tasks successfully!`, 'success')
   }
 
@@ -204,7 +204,7 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
                 </Link>
                 <button 
                   className={styles.planButton}
-                  onClick={(e) => handlePlanClick(category.name, e)}
+                  onClick={(e) => handlePlanClick(category.id, category.name, e)}
                   aria-label={`Plan tasks for ${category.name}`}
                 >
                   Plan
@@ -248,8 +248,9 @@ const Sidebar = ({ onMobileClose }: SidebarProps) => {
       />
 
       {planningCategory && (
-        <AddPlanModal
-          categoryName={planningCategory}
+        <PlanModal
+          categoryId={planningCategory.id}
+          categoryName={planningCategory.name}
           onClose={() => setPlanningCategory(null)}
           onTasksAdded={handleTasksAdded}
         />

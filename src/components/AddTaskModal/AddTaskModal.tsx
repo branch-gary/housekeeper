@@ -9,42 +9,68 @@ interface AddTaskModalProps {
   isOpen: boolean
   onClose: () => void
   defaultCategoryId?: string
+  onTaskAdded?: (task: {
+    id: string
+    name: string
+    recurrence: RecurrenceData
+  }) => void
 }
 
-const initialRecurrence: RecurrenceData = {
-  type: 'weekly',
-  interval: 1,
-  startDate: null
+function generateId() {
+  return Math.random().toString(36).substring(2) + Date.now().toString(36)
 }
 
-export default function AddTaskModal({ isOpen, onClose, defaultCategoryId }: AddTaskModalProps) {
-  const { addTask, categories } = useTaskStore()
+export default function AddTaskModal({ isOpen, onClose, defaultCategoryId, onTaskAdded }: AddTaskModalProps) {
   const [taskName, setTaskName] = useState('')
   const [selectedCategoryId, setSelectedCategoryId] = useState(defaultCategoryId || '')
-  const [recurrence, setRecurrence] = useState<RecurrenceData>(initialRecurrence)
+  const [recurrence, setRecurrence] = useState<RecurrenceData>({
+    type: 'daily',
+    interval: 1,
+    startDate: new Date().toISOString().split('T')[0]
+  })
 
-  // Update selected category when defaultCategoryId changes
+  const { categories } = useTaskStore()
+
+  // Reset form when modal opens
   useEffect(() => {
-    if (defaultCategoryId) {
-      setSelectedCategoryId(defaultCategoryId)
+    if (isOpen) {
+      setTaskName('')
+      setSelectedCategoryId(defaultCategoryId || '')
+      setRecurrence({
+        type: 'daily',
+        interval: 1,
+        startDate: new Date().toISOString().split('T')[0]
+      })
     }
-  }, [defaultCategoryId])
+  }, [isOpen, defaultCategoryId])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (!taskName.trim() || !selectedCategoryId) return
 
-    addTask({
+    if (!taskName.trim() || !selectedCategoryId) {
+      return
+    }
+
+    const newTask = {
+      id: generateId(),
       name: taskName.trim(),
-      category: selectedCategoryId,
       recurrence
-    })
+    }
+
+    // If we're in plan mode, just notify parent
+    if (onTaskAdded) {
+      onTaskAdded(newTask)
+    }
 
     // Reset form
     setTaskName('')
-    setSelectedCategoryId(defaultCategoryId || '') // Keep the default category if provided
-    setRecurrence(initialRecurrence)
+    setRecurrence({
+      type: 'daily',
+      interval: 1,
+      startDate: new Date().toISOString().split('T')[0]
+    })
+
+    // Close modal
     onClose()
   }
 
@@ -60,25 +86,28 @@ export default function AddTaskModal({ isOpen, onClose, defaultCategoryId }: Add
             onChange={(e) => setTaskName(e.target.value)}
             placeholder="e.g., Clean kitchen counter"
             autoComplete="off"
+            autoFocus
           />
         </div>
 
-        <div className={styles.field}>
-          <label htmlFor="category">Category</label>
-          <select
-            id="category"
-            value={selectedCategoryId}
-            onChange={(e) => setSelectedCategoryId(e.target.value)}
-            className={styles.select}
-          >
-            <option value="">Select a category</option>
-            {categories.map(category => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        {!defaultCategoryId && (
+          <div className={styles.field}>
+            <label htmlFor="category">Category</label>
+            <select
+              id="category"
+              value={selectedCategoryId}
+              onChange={(e) => setSelectedCategoryId(e.target.value)}
+              className={styles.select}
+            >
+              <option value="">Select a category</option>
+              {categories.map(category => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div className={styles.field}>
           <label>Recurrence</label>

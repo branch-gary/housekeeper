@@ -28,7 +28,7 @@ export function Today() {
   if (todayTasks.length === 0 && searchQuery.trim()) {
     return (
       <div className={styles.today}>
-        <EmptyState 
+        <EmptyState
           title="Nothing found"
           message="Nothing here right now — try another word?"
           actionLabel="Clear Search"
@@ -43,12 +43,12 @@ export function Today() {
 
   return (
     <div className={styles.today}>
-      <TaskSection 
-        title="Today's Tasks" 
+      <TaskSection
+        title="Today's Tasks"
         tasks={todayTasks}
         emptyMessage="No tasks for today! 🎉"
         viewId="today"
       />
     </div>
   )
-} 
+}
