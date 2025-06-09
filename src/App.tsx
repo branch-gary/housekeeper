@@ -5,6 +5,7 @@ import { Upcoming } from './pages/Upcoming'
 import { Category } from './pages/Category'
 import { SearchResults } from './pages/SearchResults'
 import { TaskProvider } from './store/TaskContext'
+import { PlanProvider } from './store/PlanContext'
 import { LayoutProvider } from './contexts/LayoutContext'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { ToastProvider } from './components/Toast/ToastProvider'
@@ -16,19 +17,21 @@ export function App() {
     <ErrorBoundary>
       <LayoutProvider>
         <TaskProvider>
-          <ToastProvider>
-            <BrowserRouter>
-              <Routes>
-                <Route element={<Layout />}>
-                  <Route index element={<Today />} />
-                  <Route path="upcoming" element={<Upcoming />} />
-                  <Route path="category/:categoryName" element={<Category />} />
-                  <Route path="search" element={<SearchResults />} />
-                </Route>
-              </Routes>
-            </BrowserRouter>
-            <DebugMenu />
-          </ToastProvider>
+          <PlanProvider>
+            <ToastProvider>
+              <BrowserRouter>
+                <Routes>
+                  <Route element={<Layout />}>
+                    <Route index element={<Today />} />
+                    <Route path="upcoming" element={<Upcoming />} />
+                    <Route path="category/:categoryName" element={<Category />} />
+                    <Route path="search" element={<SearchResults />} />
+                  </Route>
+                </Routes>
+              </BrowserRouter>
+              <DebugMenu />
+            </ToastProvider>
+          </PlanProvider>
         </TaskProvider>
       </LayoutProvider>
     </ErrorBoundary>

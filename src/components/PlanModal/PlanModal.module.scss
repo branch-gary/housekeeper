@@ -347,4 +347,16 @@
   &:hover:not(:disabled) {
     background: var(--accent-dark);
   }
+}
+
+.helperText {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-style: italic;
+  margin: 0;
+  padding: 0.5rem;
+  background: var(--bg-subtle);
+  border-radius: 6px;
+  flex-shrink: 0;
 } 

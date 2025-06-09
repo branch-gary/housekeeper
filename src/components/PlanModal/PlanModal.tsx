@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
 import Modal from '../Modal/Modal'
 import AddTaskModal from '../AddTaskModal/AddTaskModal'
 import { useTaskStore } from '../../store/TaskContext'
+import { usePlan } from '../../store/PlanContext'
 import { useToast } from '../Toast/ToastProvider'
 import styles from './PlanModal.module.scss'
 
@@ -29,6 +30,11 @@ interface ConfirmDeleteProps {
   onCancel: () => void
 }
 
+interface ConfirmCloseProps {
+  onConfirm: () => void
+  onCancel: () => void
+}
+
 function ConfirmDelete({ taskName, onConfirm, onCancel }: ConfirmDeleteProps) {
   return (
     <div className={styles.confirmDelete}>
@@ -45,14 +51,39 @@ function ConfirmDelete({ taskName, onConfirm, onCancel }: ConfirmDeleteProps) {
   )
 }
 
+function ConfirmClose({ onConfirm, onCancel }: ConfirmCloseProps) {
+  return (
+    <div className={styles.confirmDelete}>
+      <p>You have unsaved tasks in your plan. Would you like to discard them?</p>
+      <div className={styles.confirmActions}>
+        <button onClick={onCancel} className={styles.cancelButton}>
+          Keep Editing
+        </button>
+        <button onClick={onConfirm} className={styles.removeButton}>
+          Discard Plan
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function PlanModal({ categoryId, categoryName, onClose, onTasksAdded }: PlanModalProps) {
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false)
-  const [addedTasks, setAddedTasks] = useState<AddedTask[]>([])
   const [editingTask, setEditingTask] = useState<AddedTask | null>(null)
   const [taskToDelete, setTaskToDelete] = useState<AddedTask | null>(null)
+  const [showConfirmClose, setShowConfirmClose] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const { addTask } = useTaskStore()
   const { showToast } = useToast()
+  const {
+    getTemporaryTasks,
+    addTemporaryTask,
+    updateTemporaryTask,
+    removeTemporaryTask,
+    clearTemporaryTasks
+  } = usePlan()
+
+  const addedTasks = getTemporaryTasks(categoryId)
 
   const handleAddTaskClick = () => {
     setEditingTask(null)
@@ -70,7 +101,7 @@ export default function PlanModal({ categoryId, categoryName, onClose, onTasksAd
 
   const handleConfirmDelete = () => {
     if (taskToDelete) {
-      setAddedTasks(prev => prev.filter(t => t.id !== taskToDelete.id))
+      removeTemporaryTask(categoryId, taskToDelete.id)
       setTaskToDelete(null)
       showToast('Task removed from plan', 'success')
     }
@@ -79,16 +110,30 @@ export default function PlanModal({ categoryId, categoryName, onClose, onTasksAd
   const handleTaskAdded = (task: AddedTask) => {
     if (editingTask) {
       // Replace existing task
-      setAddedTasks(prev => prev.map(t => 
-        t.id === editingTask.id ? task : t
-      ))
+      updateTemporaryTask(categoryId, editingTask.id, task)
       setEditingTask(null)
       showToast('Task updated', 'success')
     } else {
       // Add new task
-      setAddedTasks(prev => [...prev, task])
+      addTemporaryTask(categoryId, {
+        ...task,
+        categoryId
+      })
     }
     setIsAddTaskModalOpen(false)
+  }
+
+  const handleCloseAttempt = () => {
+    if (addedTasks.length > 0) {
+      setShowConfirmClose(true)
+    } else {
+      onClose()
+    }
+  }
+
+  const handleConfirmClose = () => {
+    clearTemporaryTasks(categoryId)
+    onClose()
   }
 
   const validateTasks = (tasks: AddedTask[]): boolean => {
@@ -151,6 +196,9 @@ export default function PlanModal({ categoryId, categoryName, onClose, onTasksAd
         'success'
       )
 
+      // Clear temporary tasks
+      clearTemporaryTasks(categoryId)
+
       // Call callback if provided
       onTasksAdded?.(addedTasks.map(t => t.name))
 
@@ -177,7 +225,7 @@ export default function PlanModal({ categoryId, categoryName, onClose, onTasksAd
   return (
     <Modal
       isOpen={true}
-      onClose={onClose}
+      onClose={handleCloseAttempt}
       title={`🧠 Let's make a plan for your ${categoryName}`}
     >
       <div className={styles.container}>
@@ -236,6 +284,10 @@ export default function PlanModal({ categoryId, categoryName, onClose, onTasksAd
           )}
         </div>
 
+        <p className={styles.helperText}>
+          No rush — your plan will stay right here if you need a break.
+        </p>
+
         {taskToDelete && (
           <ConfirmDelete
             taskName={taskToDelete.name}
@@ -244,9 +296,16 @@ export default function PlanModal({ categoryId, categoryName, onClose, onTasksAd
           />
         )}
 
+        {showConfirmClose && (
+          <ConfirmClose
+            onConfirm={handleConfirmClose}
+            onCancel={() => setShowConfirmClose(false)}
+          />
+        )}
+
         <div className={styles.actions}>
           <button
-            onClick={onClose}
+            onClick={handleCloseAttempt}
             className={styles.cancelButton}
             disabled={isSaving}
           >
