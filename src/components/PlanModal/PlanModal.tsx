@@ -50,6 +50,7 @@ export default function PlanModal({ categoryId, categoryName, onClose, onTasksAd
   const [addedTasks, setAddedTasks] = useState<AddedTask[]>([])
   const [editingTask, setEditingTask] = useState<AddedTask | null>(null)
   const [taskToDelete, setTaskToDelete] = useState<AddedTask | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
   const { addTask } = useTaskStore()
   const { showToast } = useToast()
 
@@ -90,33 +91,77 @@ export default function PlanModal({ categoryId, categoryName, onClose, onTasksAd
     setIsAddTaskModalOpen(false)
   }
 
-  const handleSavePlan = () => {
-    if (addedTasks.length === 0) {
+  const validateTasks = (tasks: AddedTask[]): boolean => {
+    // Check for empty tasks
+    if (tasks.length === 0) {
       showToast('Please add at least one task', 'error')
-      return
+      return false
     }
 
-    // Add all tasks
-    addedTasks.forEach(task => {
-      addTask({
-        name: task.name,
-        category: categoryId,
-        recurrence: task.recurrence
-      })
-    })
+    // Check for duplicate IDs
+    const ids = new Set()
+    for (const task of tasks) {
+      if (ids.has(task.id)) {
+        showToast('Error: Duplicate task IDs detected', 'error')
+        return false
+      }
+      ids.add(task.id)
+    }
 
-    // Show success message
-    const taskCount = addedTasks.length
-    showToast(
-      `Added ${taskCount} ${taskCount === 1 ? 'task' : 'tasks'} to ${categoryName}`,
-      'success'
-    )
+    // Validate task data structure
+    for (const task of tasks) {
+      if (!task.name.trim()) {
+        showToast('Error: Empty task name detected', 'error')
+        return false
+      }
+      if (!task.recurrence || 
+          !task.recurrence.type || 
+          !task.recurrence.interval || 
+          !task.recurrence.startDate) {
+        showToast('Error: Invalid recurrence settings detected', 'error')
+        return false
+      }
+    }
 
-    // Call callback if provided
-    onTasksAdded?.(addedTasks.map(t => t.name))
+    return true
+  }
 
-    // Close modal
-    onClose()
+  const handleSavePlan = async () => {
+    try {
+      // Validate tasks before saving
+      if (!validateTasks(addedTasks)) {
+        return
+      }
+
+      setIsSaving(true)
+
+      // Add all tasks
+      for (const task of addedTasks) {
+        await addTask({
+          name: task.name,
+          category: categoryId,
+          recurrence: task.recurrence
+        })
+      }
+
+      // Show success message
+      const taskCount = addedTasks.length
+      showToast(
+        `Added ${taskCount} ${taskCount === 1 ? 'task' : 'tasks'} to ${categoryName} and Today's List`,
+        'success'
+      )
+
+      // Call callback if provided
+      onTasksAdded?.(addedTasks.map(t => t.name))
+
+      // Close modal
+      onClose()
+    } catch (error) {
+      console.error('Error saving tasks:', error)
+      showToast('Failed to save tasks. Please try again.', 'error')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const getRecurrenceLabel = (recurrence: AddedTask['recurrence']) => {
@@ -203,15 +248,23 @@ export default function PlanModal({ categoryId, categoryName, onClose, onTasksAd
           <button
             onClick={onClose}
             className={styles.cancelButton}
+            disabled={isSaving}
           >
             Cancel
           </button>
           <button
             onClick={handleSavePlan}
             className={styles.saveButton}
-            disabled={addedTasks.length === 0}
+            disabled={addedTasks.length === 0 || isSaving}
           >
-            Save Plan
+            {isSaving ? (
+              <span className={styles.savingState}>
+                <span className={styles.spinner} />
+                Saving...
+              </span>
+            ) : (
+              'Save Plan'
+            )}
           </button>
         </div>
       </div>

@@ -4,11 +4,15 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
   position: relative;
+  height: calc(100vh - 120px); // Account for modal header/padding
+  max-height: 800px;
 }
 
 .header {
+  flex-shrink: 0; // Prevent header from shrinking
+
   .message {
     font-size: 1.1rem;
     line-height: 1.6;
@@ -25,8 +29,9 @@
 .addTaskSection {
   display: flex;
   justify-content: center;
-  padding: 1rem 0;
+  padding: 0.5rem 0;
   width: 100%;
+  flex-shrink: 0; // Prevent button from shrinking
 }
 
 .addTaskButton {
@@ -62,6 +67,9 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  flex: 1; // Take up remaining space
+  min-height: 0; // Allow content to scroll
+  overflow: hidden; // Contain scrolling content
 }
 
 .taskListTitle {
@@ -70,6 +78,7 @@
   color: var(--text-primary);
   margin: 0;
   padding: 0 0.5rem;
+  flex-shrink: 0; // Prevent title from shrinking
 }
 
 .emptyMessage {
@@ -86,10 +95,11 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  max-height: 50vh;
   overflow-y: auto;
   padding: 0.5rem;
   padding-right: 1rem;
+  flex: 1; // Take up remaining space
+  min-height: 0; // Allow content to scroll
 
   &::-webkit-scrollbar {
     width: 8px;
@@ -119,6 +129,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
+  flex-shrink: 0; // Prevent cards from shrinking
 
   &::before {
     content: '';
@@ -258,12 +269,39 @@
   }
 }
 
+.savingState {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .actions {
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
   padding-top: 1rem;
   border-top: 1px solid var(--border);
+  background: var(--bg-card, white);
+  flex-shrink: 0; // Prevent actions from shrinking
+  position: sticky;
+  bottom: 0;
+  margin-top: auto; // Push to bottom if content is short
+  z-index: 1; // Ensure it stays above scrolling content
 }
 
 .cancelButton,
@@ -274,10 +312,20 @@
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &:focus {
     outline: none;
     box-shadow: 0 0 0 3px var(--accent-alpha);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
   }
 }
 
@@ -286,7 +334,7 @@
   border: 1px solid var(--border);
   color: var(--text-primary);
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: var(--bg-button-hover);
   }
 }
@@ -298,10 +346,5 @@
 
   &:hover:not(:disabled) {
     background: var(--accent-dark);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
   }
 } 
