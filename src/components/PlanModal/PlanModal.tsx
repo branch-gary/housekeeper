@@ -159,38 +159,61 @@ export default function PlanModal({ categoryId, categoryName, onClose, onTasksAd
   }
 
   const validateTasks = (tasks: AddedTask[]): boolean => {
-    // Check for empty tasks
-    if (tasks.length === 0) {
-      showToast('Please add at least one task', 'error')
+    try {
+      // Check for empty tasks
+      if (tasks.length === 0) {
+        showToast('Please add at least one task to your plan', 'error')
+        return false
+      }
+
+      // Check for duplicate IDs
+      const ids = new Set()
+      for (const task of tasks) {
+        if (ids.has(task.id)) {
+          showToast('Internal error: Duplicate task IDs detected', 'error')
+          return false
+        }
+        ids.add(task.id)
+      }
+
+      // Validate task data structure
+      for (const task of tasks) {
+        if (!task.name.trim()) {
+          showToast('Please provide a name for all tasks', 'error')
+          return false
+        }
+
+        if (!task.recurrence) {
+          showToast('Please set recurrence for all tasks', 'error')
+          return false
+        }
+
+        const { type, interval, startDate } = task.recurrence
+        if (!type || !interval) {
+          showToast('Please complete recurrence settings for all tasks', 'error')
+          return false
+        }
+
+        // Ensure startDate is valid
+        if (!startDate) {
+          showToast('Please set a start date for all tasks', 'error')
+          return false
+        }
+
+        try {
+          new Date(startDate).toISOString()
+        } catch (e) {
+          showToast('Invalid date format detected', 'error')
+          return false
+        }
+      }
+
+      return true
+    } catch (error) {
+      console.error('Error validating tasks:', error)
+      showToast('An unexpected error occurred while validating tasks', 'error')
       return false
     }
-
-    // Check for duplicate IDs
-    const ids = new Set()
-    for (const task of tasks) {
-      if (ids.has(task.id)) {
-        showToast('Error: Duplicate task IDs detected', 'error')
-        return false
-      }
-      ids.add(task.id)
-    }
-
-    // Validate task data structure
-    for (const task of tasks) {
-      if (!task.name.trim()) {
-        showToast('Error: Empty task name detected', 'error')
-        return false
-      }
-      if (!task.recurrence || 
-          !task.recurrence.type || 
-          !task.recurrence.interval || 
-          !task.recurrence.startDate) {
-        showToast('Error: Invalid recurrence settings detected', 'error')
-        return false
-      }
-    }
-
-    return true
   }
 
   const handleSavePlan = async () => {
@@ -202,33 +225,43 @@ export default function PlanModal({ categoryId, categoryName, onClose, onTasksAd
 
       setIsSaving(true)
 
+      // Track successfully added task IDs
+      const addedTaskIds: string[] = []
+
       // Add all tasks
       for (const task of addedTasks) {
-        await addTask({
-          name: task.name,
-          category: categoryId,
-          recurrence: task.recurrence
-        })
+        try {
+          await addTask({
+            name: task.name,
+            category: categoryId,
+            recurrence: {
+              ...task.recurrence,
+              startDate: task.recurrence.startDate || format(new Date(), 'yyyy-MM-dd')
+            }
+          })
+          addedTaskIds.push(task.id)
+        } catch (error) {
+          console.error('Failed to add task:', task.name, error)
+          throw new Error(`Failed to add task: ${task.name}`)
+        }
       }
-
-      // Show success message
-      const taskCount = addedTasks.length
-      showToast(
-        `Added ${taskCount} ${taskCount === 1 ? 'task' : 'tasks'} to ${categoryName} and Today's List`,
-        'success'
-      )
 
       // Clear temporary tasks
       clearTemporaryTasks(categoryId)
 
-      // Call callback if provided
-      onTasksAdded?.(addedTasks.map(t => t.name))
+      // Notify parent component about added tasks
+      if (onTasksAdded) {
+        onTasksAdded(addedTaskIds)
+      }
 
-      // Close modal
+      showToast(`Plan saved! ${addedTasks.length} ${addedTasks.length === 1 ? 'task has' : 'tasks have'} been added.`, 'success')
       onClose()
     } catch (error) {
-      console.error('Error saving tasks:', error)
-      showToast('Failed to save tasks. Please try again.', 'error')
+      console.error('Error saving plan:', error)
+      showToast(
+        error instanceof Error ? error.message : 'Failed to save plan. Please try again.',
+        'error'
+      )
     } finally {
       setIsSaving(false)
     }
